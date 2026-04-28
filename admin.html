@@ -211,9 +211,35 @@ header {
 .me-time { font-weight: 500; min-width: 42px; color: var(--chocolate); }
 .me-name { flex: 1; color: var(--text); }
 .me-cat { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+
+/* LOGIN */
+.login-overlay{position:fixed;inset:0;background:var(--chocolate);display:flex;align-items:center;justify-content:center;z-index:999;padding:1.5rem;}
+.login-box{background:var(--cream);border-radius:var(--radius);padding:2.5rem 2rem;width:100%;max-width:380px;text-align:center;}
+.login-logo{width:56px;height:56px;background:var(--caramel);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:28px;color:white;font-weight:600;margin:0 auto 1.25rem;}
+.login-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--chocolate);margin-bottom:.25rem;}
+.login-sub{font-size:13px;color:var(--text-muted);margin-bottom:2rem;}
+.login-input{width:100%;font-family:'DM Sans',sans-serif;font-size:15px;background:white;border:0.5px solid var(--border-strong);border-radius:var(--radius-sm);padding:12px 16px;color:var(--text);outline:none;text-align:center;letter-spacing:.15em;margin-bottom:12px;}
+.login-input:focus{border-color:var(--caramel);}
+.login-btn{width:100%;background:var(--caramel);color:white;border:none;border-radius:var(--radius-sm);padding:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:background .15s;}
+.login-btn:hover{background:var(--caramel-dark);}
+.login-err{font-size:13px;color:#C0392B;margin-top:10px;display:none;}
+.login-err.show{display:block;}
+.logout-btn{background:none;border:0.5px solid rgba(255,255,255,.2);border-radius:var(--radius-sm);padding:5px 14px;font-size:12px;color:rgba(255,255,255,.6);cursor:pointer;}
+.logout-btn:hover{background:rgba(255,255,255,.1);color:white;}
 </style>
 </head>
 <body>
+
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">M</div>
+    <div class="login-title">Maria Chocolate</div>
+    <div class="login-sub">Painel administrativo — acesso restrito</div>
+    <input class="login-input" type="password" id="login-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')tryLogin()" />
+    <button class="login-btn" onclick="tryLogin()">Entrar</button>
+    <div class="login-err" id="login-err">Senha incorreta. Tente novamente.</div>
+  </div>
+</div>
 
 <header>
   <div class="header-left">
@@ -223,7 +249,7 @@ header {
       <div class="logo-sub">Painel administrativo</div>
     </div>
   </div>
-  <div class="admin-badge">Admin</div>
+  <div style="display:flex;align-items:center;gap:12px;"><div class="admin-badge">Admin</div><button class="logout-btn" onclick="logout()">Sair</button></div>
 </header>
 
 <div class="container">
@@ -457,6 +483,40 @@ seedData();
 renderStats();
 renderList();
 renderAdminCal();
+
+// ── AUTH ──────────────────────────────────────────────────────────────
+const ADMIN_PWD_HASH = 'ddd76a752b6c093f1bcc9cf9c83b1b53b19c108495dfaa40e9079ff5695c7312'; // senha: mariaChocolate
+
+async function hashStr(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function tryLogin(){
+  const pwd = document.getElementById('login-pwd').value;
+  const hash = await hashStr(pwd);
+  if(hash === ADMIN_PWD_HASH){
+    sessionStorage.setItem('mc_auth','1');
+    document.getElementById('login-overlay').style.display='none';
+    document.getElementById('login-err').classList.remove('show');
+  } else {
+    document.getElementById('login-err').classList.add('show');
+    document.getElementById('login-pwd').value='';
+    document.getElementById('login-pwd').focus();
+  }
+}
+
+function logout(){
+  sessionStorage.removeItem('mc_auth');
+  document.getElementById('login-pwd').value='';
+  document.getElementById('login-overlay').style.display='flex';
+}
+
+// Check session on load
+if(sessionStorage.getItem('mc_auth')==='1'){
+  document.getElementById('login-overlay').style.display='none';
+}
+
 </script>
 </body>
 </html>
