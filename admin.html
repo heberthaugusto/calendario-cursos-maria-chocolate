@@ -318,19 +318,6 @@ function getBookings() {
 }
 function saveBookings(b) { localStorage.setItem(STORAGE_KEY, JSON.stringify(b)); }
 
-function seedData() {
-  if(getBookings().length > 0) return;
-  const today = new Date();
-  const samples = [
-    { id:1, data: fmtDate(today,5), hora:'10:00', nome:'Ana Lima', email:'ana@email.com', categoria:'Chocolateria', titulo:'Trufas Belgas com Ganache', descricao:'Aprenda a fazer trufas artesanais com cobertura de chocolate belga e recheios de ganache de maracujá e framboesa.', valor:280, status:'pendente', criadoEm: new Date().toISOString() },
-    { id:2, data: fmtDate(today,8), hora:'14:00', nome:'Carla Matos', email:'carla@email.com', categoria:'Confeitaria', titulo:'Bolos Decorados com Buttercream', descricao:'Técnicas de montagem e decoração de bolos de múltiplos andares com buttercream americano e suíço.', valor:350, status:'aprovado', criadoEm: new Date().toISOString() },
-    { id:3, data: fmtDate(today,12), hora:'09:00', nome:'Roberto Silva', email:'roberto@email.com', categoria:'Chocolateria', titulo:'Bombons Recheados', descricao:'Moldagem de bombons, temperagem do chocolate e recheios variados.', valor:220, status:'pendente', criadoEm: new Date().toISOString() },
-    { id:4, data: fmtDate(today,15), hora:'13:00', nome:'Fernanda Costa', email:'fern@email.com', categoria:'Confeitaria', titulo:'Cupcakes Gourmet', descricao:'Receitas de cupcakes premium com coberturas de cream cheese e frosting colorido.', valor:190, status:'reprovado', criadoEm: new Date().toISOString() },
-    { id:5, data: fmtDate(today,20), hora:'16:00', nome:'Marcos Alves', email:'marcos@email.com', categoria:'Chocolateria', titulo:'Ovos de Páscoa Artesanais', descricao:'Produção de ovos de Páscoa recheados com ganache e decoração com transfer colorido.', valor:300, status:'pendente', criadoEm: new Date().toISOString() },
-  ];
-  saveBookings(samples);
-}
-
 function fmtDate(base, addDays) {
   const d = new Date(base); d.setDate(d.getDate()+addDays);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -479,7 +466,6 @@ function clearAll() {
   if(confirm('Apagar todos os dados de teste?')) { localStorage.removeItem(STORAGE_KEY); renderStats(); renderList(); renderAdminCal(); }
 }
 
-seedData();
 renderStats();
 renderList();
 renderAdminCal();
