@@ -256,7 +256,8 @@ textarea{resize:vertical;min-height:100px;}
       <div class="form-group" id="fg-cat"><label>Categoria <span class="req">*</span></label><select id="f-cat"><option value="">Selecionar...</option><option value="Chocolateria">🍫 Chocolateria</option><option value="Confeitaria">🎂 Confeitaria</option><option value="Salgados">🥐 Salgados</option><option value="Fornecedor">🏪 Fornecedor</option></select><span class="err-msg">Selecione a categoria</span></div>
       <div class="form-group" id="fg-valor"><label>Valor do curso <span class="req">*</span></label><div class="prefix-input"><span>R$</span><input type="number" id="f-valor" placeholder="0,00" min="0" step="0.01" /></div><span class="err-msg">Informe o valor</span></div>
       <div class="form-group form-full" id="fg-titulo"><label>Título do curso <span class="req">*</span></label><input type="text" id="f-titulo" placeholder="Ex: Trufas Belgas com Ganache de Maracujá" /><span class="err-msg">Informe o título</span></div>
-      <div class="form-group form-full" id="fg-desc"><label>Descrição — o que os alunos vão aprender <span class="req">*</span></label><textarea id="f-desc" placeholder="Descreva os tópicos, técnicas e materiais que serão abordados..."></textarea><span class="err-msg">Descreva o curso (mín. 20 caracteres)</span></div>
+      <div class="form-group form-full" id="fg-desc"><label>Descrição — o que os alunos vão aprender <span class="req">*</span></label><textarea id="f-desc" placeholder="Descreva os tópicos, técnicas e materiais que serão abordados..." oninput="updateDescCount()"></textarea>
+        <div style="font-size:12px;color:var(--text-muted);text-align:right;margin-top:4px"><span id="desc-count">0</span>/500 caracteres mínimos</div><span class="err-msg">A descrição deve ter pelo menos 500 caracteres</span></div>
     </div>
 
     <div class="sec-title">Foto para divulgação</div>
@@ -264,11 +265,12 @@ textarea{resize:vertical;min-height:100px;}
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('f-foto').click()">
         <div style="font-size:28px;margin-bottom:8px">📷</div>
         <div id="upload-title" style="font-size:14px;font-weight:500">Clique para selecionar as fotos</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Formato <strong>JPG ou PNG</strong> · Mínimo <strong>1080×1080 px</strong> · Múltiplas fotos permitidas</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Formato <strong>JPG ou PNG</strong> · Mínimo <strong>1080×1080 px</strong> · Mínimo <strong>2 fotos</strong> · Máximo <strong>5 fotos</strong></div>
       </div>
       <input type="file" id="f-foto" accept="image/jpeg,image/png" multiple style="display:none" onchange="handleUpload(this)" />
       <div class="photo-grid" id="photo-grid"></div>
-      <span class="err-msg" id="foto-err-msg">Selecione ao menos uma foto válida (mín. 1080×1080 px)</span>
+      <div id="foto-counter" style="font-size:12px;font-weight:500;margin-top:6px;display:none"></div>
+      <span class="err-msg" id="foto-err-msg">Envie entre 2 e 5 fotos válidas (mín. 1080×1080 px)</span>
     </div>
 
     <button class="next-btn" onclick="submitForm()" style="margin-top:2rem">Enviar solicitação</button>
@@ -481,8 +483,11 @@ let validPhotos = []; // stores {file, url} of approved photos
 function handleUpload(inp){
   if(!inp.files||!inp.files.length) return;
   const files = Array.from(inp.files);
-  inp.value = ''; // reset so same file can be re-added after removal
-  files.forEach(file => {
+  inp.value = '';
+  const slots = 5 - validPhotos.length;
+  if(slots <= 0) return;
+  const allowed = files.slice(0, slots);
+  allowed.forEach(file => {
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
@@ -499,17 +504,26 @@ function handleUpload(inp){
 function renderPhotoGrid(errName){
   const grid = document.getElementById('photo-grid');
   const fg = document.getElementById('fg-foto');
+  const count = validPhotos.length;
+  const atMax = count >= 5;
   // build thumbs from validPhotos
   let html = validPhotos.map((p,i) => `
     <div class="photo-thumb">
       <img src="${p.url}" />
       <button class="ph-remove" onclick="removePhoto(${i})" title="Remover">✕</button>
     </div>`).join('');
-  // add button
-  html += `<div class="photo-add" onclick="document.getElementById('f-foto').click()" title="Adicionar mais fotos">+</div>`;
+  // add button only if below max
+  if(!atMax) html += `<div class="photo-add" onclick="document.getElementById('f-foto').click()" title="Adicionar mais fotos">+</div>`;
   grid.innerHTML = html;
+  // counter badge
+  const counterEl = document.getElementById('foto-counter');
+  if(counterEl){
+    counterEl.textContent = count + '/5 fotos';
+    counterEl.style.color = count >= 2 ? 'var(--green,#2D7A4F)' : 'var(--caramel)';
+    counterEl.style.display = count > 0 ? 'block' : 'none';
+  }
   // show/hide upload zone placeholder
-  document.getElementById('upload-zone').style.display = validPhotos.length ? 'none' : 'block';
+  document.getElementById('upload-zone').style.display = count ? 'none' : 'block';
   // error for rejected file
   if(errName){
     const errDiv = document.createElement('div');
@@ -518,7 +532,7 @@ function renderPhotoGrid(errName){
     grid.appendChild(errDiv);
     setTimeout(()=>errDiv.remove(), 5000);
   }
-  if(validPhotos.length > 0) fg.classList.remove('field-err');
+  if(count >= 2) fg.classList.remove('field-err');
 }
 
 function removePhoto(idx){
@@ -530,6 +544,14 @@ function removePhoto(idx){
   }
 }
 
+function updateDescCount(){
+  const len = document.getElementById('f-desc').value.trim().length;
+  const el = document.getElementById('desc-count');
+  el.textContent = len;
+  el.style.color = len >= 500 ? 'var(--green,#2D7A4F)' : len >= 300 ? 'var(--caramel)' : 'var(--text-muted)';
+  if(len >= 500) document.getElementById('fg-desc').classList.remove('field-err');
+}
+
 function validate(){
   const checks=[
     {id:'fg-nome', ok:()=>document.getElementById('f-nome').value.trim()},
@@ -537,8 +559,8 @@ function validate(){
     {id:'fg-cat',  ok:()=>document.getElementById('f-cat').value},
     {id:'fg-valor',ok:()=>document.getElementById('f-valor').value&&parseFloat(document.getElementById('f-valor').value)>0},
     {id:'fg-titulo',ok:()=>document.getElementById('f-titulo').value.trim()},
-    {id:'fg-desc', ok:()=>document.getElementById('f-desc').value.trim().length>=20},
-    {id:'fg-foto', ok:()=>validPhotos.length>0},
+    {id:'fg-desc', ok:()=>document.getElementById('f-desc').value.trim().length>=500},
+    {id:'fg-foto', ok:()=>validPhotos.length>=2&&validPhotos.length<=5},
   ];
   let ok=true;
   checks.forEach(c=>{ const el=document.getElementById(c.id); if(!c.ok()){el.classList.add('field-err');ok=false;}else el.classList.remove('field-err'); });
