@@ -55,6 +55,8 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 .cal-day.empty{cursor:default;}
 .cal-day.past{opacity:.35;cursor:not-allowed;}
 .cal-day.blocked-day{background:var(--warm);cursor:not-allowed;}
+.cal-day.admin-blocked{background:#FDECEA;border:1.5px solid #EF9A9A;cursor:not-allowed;}
+.cal-day.admin-blocked .day-num{color:#C62828;}
 .cal-day.has-am{background:linear-gradient(to bottom,#FAEBD7 50%,white 50%);}
 .cal-day.has-pm{background:linear-gradient(to bottom,white 50%,#E8D5F0 50%);}
 .cal-day.has-am.has-pm{background:#F5E6E0;cursor:not-allowed;}
@@ -184,7 +186,7 @@ textarea{resize:vertical;min-height:120px;}
       <div class="cal-legend">
         <div class="legend-item"><div class="legend-swatch" style="background:#FFF3E0;border:1.5px solid #FFB74D"></div> Reservado — pendente</div>
         <div class="legend-item"><div class="legend-swatch" style="background:#E8F5E9;border:1.5px solid #81C784"></div> Confirmado</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:#F5E6E0"></div> Totalmente ocupado</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#FDECEA;border:1.5px solid #EF9A9A"></div> Data bloqueada</div>
         <div class="legend-item"><div class="legend-swatch" style="background:var(--warm);border:0.5px solid var(--border-strong)"></div> Indisponível</div>
       </div>
     </div>
@@ -307,11 +309,18 @@ let validPhotos=[];
 let allBookings=[];
 
 // ── FIRESTORE ──────────────────────────────────────────────────────────
+let blockedDates=[];
+function getBlockedDates(){ return blockedDates; }
+
 async function loadBookings(){
   try {
-    const snap = await getDocs(collection(db,'agendamentos'));
-    allBookings = snap.docs.map(d=>({id:d.id,...d.data()}));
-  } catch(e){ console.error('Erro ao carregar agendamentos',e); }
+    const [snapA, snapB] = await Promise.all([
+      getDocs(collection(db,'agendamentos')),
+      getDocs(collection(db,'datas_bloqueadas'))
+    ]);
+    allBookings  = snapA.docs.map(d=>({id:d.id,...d.data()}));
+    blockedDates = snapB.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e){ console.error('Erro ao carregar dados',e); }
 }
 
 function getB(){ return allBookings.filter(b=>b.status!=='reprovado'); }
@@ -377,8 +386,9 @@ function canBookPeriod(ds, period){
   return true;
 }
 
-// A day is clickable if it has at least one available period
+// A day is clickable if it has at least one available period and is not admin-blocked
 function isDayClickable(ds){
+  if(getBlockedDates().some(b=>b.date===ds)) return false;
   if(['manha','tarde','dia','2dias'].some(p=>canBookPeriod(ds,p))) return true;
   return false;
 }
@@ -390,16 +400,19 @@ function renderCal(){
   document.getElementById('cal-weekdays').innerHTML=WD.map(w=>`<div class="cal-weekday">${w}</div>`).join('');
   const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
   const today=new Date(); today.setHours(0,0,0,0);
+  const minDate=new Date(today); minDate.setDate(minDate.getDate()+20);
   let html='';
   for(let i=0;i<first;i++) html+=`<div class="cal-day empty"></div>`;
   for(let d=1;d<=days;d++){
     const ds=toDS(y,m+1,d);
-    const isPast=new Date(y,m,d)<today;
+    const isPast=new Date(y,m,d)<minDate;
     const clickable=!isPast&&isDayClickable(ds);
     const{am,pm,full}=getDayOccupancy(ds);
     const{amStatus,pmStatus,fullStatus}=getDayStatus(ds);
+    const isAdminBlocked=getBlockedDates().some(b=>b.date===ds);
     let cls='cal-day';
     if(isPast) cls+=' past';
+    else if(isAdminBlocked) cls+=' admin-blocked';
     else if(!clickable) cls+=' blocked-day';
     else { if(full) cls+=' blocked-day'; else if(am&&pm) cls+=' blocked-day'; else if(am&&!pm) cls+=' has-am'; else if(pm&&!am) cls+=' has-pm'; }
     // Apply granular status colors
@@ -418,8 +431,10 @@ function renderCal(){
       const bs=allBookings.filter(b=>b.status!=='reprovado'&&(b.data===ds||(b.data2&&b.data2===ds)));
       bs.forEach(b=>{ if(b.duracao==='manha') tags+=`<div class="day-tag tag-am">manhã</div>`; else if(b.duracao==='tarde') tags+=`<div class="day-tag tag-pm">tarde</div>`; else tags+=`<div class="day-tag tag-full">dia int.</div>`; });
     }
+    const blockedEntry=getBlockedDates().find(b=>b.date===ds);
     const onclick=clickable?`onclick="selectDay('${ds}')"`:'' ;
-    html+=`<div class="${cls}" ${onclick}><div class="day-num">${d}</div><div class="day-tags">${tags}</div></div>`;
+    const title=blockedEntry?(blockedEntry.reason||'Data bloqueada'):'';
+    html+=`<div class="${cls}" ${onclick} ${title?`title="${title}"`:''}><div class="day-num">${d}</div><div class="day-tags">${tags}</div></div>`;
   }
   document.getElementById('cal-days').innerHTML=html;
 }

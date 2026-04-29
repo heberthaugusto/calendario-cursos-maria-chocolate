@@ -26,13 +26,7 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 .container{max-width:1000px;margin:0 auto;padding:2rem 1.5rem 4rem;}
 .page-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
 .page-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--chocolate);}
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:2rem;}
-.stat-card{background:white;border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;}
-.stat-label{font-size:12px;color:var(--text-muted);margin-bottom:4px;}
-.stat-val{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--chocolate);line-height:1;}
-.stat-val.pending{color:var(--amber);}
-.stat-val.approved{color:var(--green);}
-.stat-val.rejected{color:var(--red);}
+
 .filters{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center;}
 .filter-btn{padding:7px 16px;border-radius:20px;border:0.5px solid var(--border-strong);background:white;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--text-muted);transition:all .15s;}
 .filter-btn:hover{background:var(--warm);}
@@ -91,6 +85,18 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 .ph-btn-dl{background:var(--caramel);color:white;}
 .dl-all-btn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:7px 16px;background:var(--chocolate);color:white;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;}
 .dl-all-btn:hover{background:var(--caramel-dark);}
+/* BLOCKED DATES */
+.block-panel{background:white;border:0.5px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-top:2rem;}
+.block-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--chocolate);margin-bottom:1rem;}
+.block-form{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:1rem;}
+.block-input{font-family:'DM Sans',sans-serif;font-size:14px;background:var(--cream);border:0.5px solid var(--border-strong);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);outline:none;}
+.block-input:focus{border-color:var(--caramel);}
+.block-add-btn{padding:8px 18px;background:var(--chocolate);color:white;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;}
+.block-add-btn:hover{background:var(--caramel-dark);}
+.blocked-list{display:flex;flex-wrap:wrap;gap:8px;}
+.blocked-tag{display:flex;align-items:center;gap:6px;background:var(--red-bg);border:0.5px solid var(--red);border-radius:20px;padding:4px 12px;font-size:13px;color:var(--red);}
+.blocked-tag button{background:none;border:none;cursor:pointer;color:var(--red);font-size:14px;line-height:1;padding:0;}
+.mini-day.admin-blocked{background:#FDECEA;border:1.5px solid #EF9A9A;}
 /* CALENDAR VIEW */
 .cal-view-wrap{margin-top:2.5rem;}
 .cal-view-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--chocolate);margin-bottom:1rem;}
@@ -164,13 +170,11 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
     <button class="filter-btn" onclick="loadData()" style="border-color:var(--caramel);color:var(--caramel)">↻ Atualizar</button>
   </div>
 
-  <div class="stats-row" id="stats-row">
-    <div class="stat-card"><div class="stat-label">Carregando...</div><div class="stat-val">—</div></div>
-  </div>
+
 
   <div class="filters">
-    <button class="filter-btn active" onclick="setFilter('todos',this)">Todos</button>
-    <button class="filter-btn" onclick="setFilter('pendente',this)">Pendentes</button>
+    <button class="filter-btn" onclick="setFilter('historico',this)">Histórico</button>
+    <button class="filter-btn active" onclick="setFilter('pendente',this)">Pendentes</button>
     <button class="filter-btn" onclick="setFilter('aprovado',this)">Aprovados</button>
     <button class="filter-btn" onclick="setFilter('reprovado',this)">Reprovados</button>
     <div class="filter-sep"></div>
@@ -200,7 +204,23 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
       <div class="mini-events-list" id="admin-events-list"></div>
     </div>
   </div>
-</div>
+  <!-- BLOCKED DATES PANEL -->
+  <div class="block-panel">
+    <div class="block-title">Bloquear datas</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem">Adicione datas indisponíveis para agendamento (feriados, eventos, etc.)</p>
+    <div class="block-form">
+      <div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Data</div>
+        <input type="date" class="block-input" id="block-date" />
+      </div>
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Motivo (opcional)</div>
+        <input type="text" class="block-input" id="block-reason" placeholder="Ex: Feriado nacional" style="width:100%" />
+      </div>
+      <button class="block-add-btn" onclick="addBlockedDate()">Bloquear data</button>
+    </div>
+    <div class="blocked-list" id="blocked-list"></div>
+  </div>
 
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
   <div class="modal" id="modal-body"></div>
@@ -212,7 +232,7 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDcnXi9F35BMBJDHc90V3fFFJ1kwHCWJdY",
@@ -231,7 +251,8 @@ const MONTHS_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','
 const WD=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 
 let allBookings=[];
-let currentFilter='todos';
+let blockedDates=[];
+let currentFilter='pendente';
 let adminCur=new Date(); adminCur.setDate(1);
 
 // ── AUTH ───────────────────────────────────────────────────────────────
@@ -261,9 +282,13 @@ window.logout = function(){
 // ── DATA ───────────────────────────────────────────────────────────────
 window.loadData = async function(){
   try {
-    const snap=await getDocs(collection(db,'agendamentos'));
-    allBookings=snap.docs.map(d=>({id:d.id,...d.data()}));
-    renderStats(); renderList(); renderAdminCal();
+    const [snapA, snapB] = await Promise.all([
+      getDocs(collection(db,'agendamentos')),
+      getDocs(collection(db,'datas_bloqueadas'))
+    ]);
+    allBookings  = snapA.docs.map(d=>({id:d.id,...d.data()}));
+    blockedDates = snapB.docs.map(d=>({id:d.id,...d.data()}));
+    renderList(); renderAdminCal(); renderBlockedList();
   } catch(e){ console.error(e); alert('Erro ao carregar dados: '+e.message); }
 }
 
@@ -272,7 +297,7 @@ window.updateStatus = async function(id, status){
     await updateDoc(doc(db,'agendamentos',id),{status});
     const idx=allBookings.findIndex(b=>b.id===id);
     if(idx>-1) allBookings[idx].status=status;
-    renderStats(); renderList(); renderAdminCal();
+    renderList(); renderAdminCal();
 
     // Send result email to instructor
     const b=allBookings.find(x=>x.id===id);
@@ -331,7 +356,7 @@ window.cancelApproval = async function(id){
         });
       } catch(e){ console.warn('Erro ao enviar e-mail:', e); }
     }
-    renderStats(); renderList(); renderAdminCal();
+    renderList(); renderAdminCal();
   } catch(e){ alert('Erro ao cancelar: '+e.message); }
 }
 
@@ -341,14 +366,7 @@ function fmtDate(ds){ if(!ds) return '—'; const[y,m,d]=ds.split('-'); return `
 function fmtLong(ds){ if(!ds) return '—'; const[y,m,d]=ds.split('-'); const dt=new Date(y,m-1,d); return `${WD[dt.getDay()]}, ${d} de ${MONTHS_PT[m-1]} de ${y}`; }
 function durLabel(d){ return {manha:'Somente manhã',tarde:'Somente tarde',dia:'Dia inteiro','2dias':'2 dias inteiros'}[d]||d; }
 
-function renderStats(){
-  const t=allBookings.length, p=allBookings.filter(b=>b.status==='pendente').length, a=allBookings.filter(b=>b.status==='aprovado').length, r=allBookings.filter(b=>b.status==='reprovado').length;
-  document.getElementById('stats-row').innerHTML=`
-    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val">${t}</div></div>
-    <div class="stat-card"><div class="stat-label">Pendentes</div><div class="stat-val pending">${p}</div></div>
-    <div class="stat-card"><div class="stat-label">Aprovados</div><div class="stat-val approved">${a}</div></div>
-    <div class="stat-card"><div class="stat-label">Reprovados</div><div class="stat-val rejected">${r}</div></div>`;
-}
+
 
 window.setFilter = function(f, btn){
   currentFilter=f;
@@ -361,7 +379,8 @@ function renderList(){
   const statuses=['pendente','aprovado','reprovado'];
   const cats=['Chocolateria','Confeitaria','Salgados','Fornecedor'];
   let filtered=allBookings;
-  if(statuses.includes(currentFilter)) filtered=allBookings.filter(b=>b.status===currentFilter);
+  if(currentFilter==='historico') filtered=allBookings;
+  else if(statuses.includes(currentFilter)) filtered=allBookings.filter(b=>b.status===currentFilter);
   else if(cats.includes(currentFilter)) filtered=allBookings.filter(b=>b.categoria===currentFilter);
   filtered=[...filtered].sort((a,b)=>a.data.localeCompare(b.data));
   const container=document.getElementById('bookings-list');
@@ -452,7 +471,8 @@ function renderAdminCal(){
       else if(b.duracao==='tarde') pmStatus=st;
       else fullStatus=st;
     });
-    let cls='mini-day'+(isPast?' past-day':'');
+    const isBlocked=getBlockedDates().some(b=>b.date===ds);
+    let cls='mini-day'+(isPast?' past-day':'')+(isBlocked?' admin-blocked':'');
     if(!isPast){
       if(fullStatus)  cls+=` full-${fullStatus}`;
       else {
@@ -494,6 +514,44 @@ window.downloadAllPhotos = async function(fotos){
     await new Promise(r=>setTimeout(r,500)); // small delay between downloads
     await downloadPhoto(fotos[i], i+1);
   }
+}
+
+
+// ── BLOCKED DATES (Firestore) ──────────────────────────────────────────
+function getBlockedDates(){ return blockedDates; }
+
+window.addBlockedDate = async function(){
+  const dateEl=document.getElementById('block-date');
+  const reasonEl=document.getElementById('block-reason');
+  const ds=dateEl.value;
+  if(!ds){ dateEl.focus(); return; }
+  if(blockedDates.find(b=>b.date===ds)){ alert('Esta data já está bloqueada.'); return; }
+  const[y,m,d]=ds.split('-');
+  const entry={date:ds, reason:reasonEl.value.trim(), label:d+'/'+m+'/'+y};
+  try {
+    const docRef=await addDoc(collection(db,'datas_bloqueadas'), entry);
+    blockedDates.push({id:docRef.id,...entry});
+    dateEl.value=''; reasonEl.value='';
+    renderBlockedList(); renderAdminCal();
+  } catch(e){ alert('Erro ao bloquear data: '+e.message); }
+}
+
+window.removeBlockedDate = async function(id){
+  try {
+    await deleteDoc(doc(db,'datas_bloqueadas',id));
+    blockedDates=blockedDates.filter(b=>b.id!==id);
+    renderBlockedList(); renderAdminCal();
+  } catch(e){ alert('Erro ao remover bloqueio: '+e.message); }
+}
+
+function renderBlockedList(){
+  const sorted=[...blockedDates].sort((a,b)=>a.date.localeCompare(b.date));
+  const el=document.getElementById('blocked-list');
+  if(!sorted.length){ el.innerHTML='<span style="font-size:13px;color:var(--text-muted)">Nenhuma data bloqueada.</span>'; return; }
+  el.innerHTML=sorted.map(b=>
+    '<div class="blocked-tag">🚫 '+b.label+(b.reason?' — '+b.reason:'')+
+    ' <button onclick="removeBlockedDate(''+b.id+'')" title="Remover bloqueio">✕</button></div>'
+  ).join('');
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────
