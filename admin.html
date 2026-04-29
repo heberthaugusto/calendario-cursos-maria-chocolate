@@ -549,8 +549,8 @@ function renderBlockedList(){
   const el=document.getElementById('blocked-list');
   if(!sorted.length){ el.innerHTML='<span style="font-size:13px;color:var(--text-muted)">Nenhuma data bloqueada.</span>'; return; }
   el.innerHTML=sorted.map(b=>
-    '<div class="blocked-tag">🚫 '+b.label+(b.reason?' — '+b.reason:'')+
-    ' <button onclick="removeBlockedDate(''+b.id+'')" title="Remover bloqueio">✕</button></div>'
+    `<div class="blocked-tag">🚫 ${b.label}${b.reason?' — '+b.reason:''}
+    <button onclick="removeBlockedDate('${b.id}')" title="Remover bloqueio">✕</button></div>`
   ).join('');
 }
 
