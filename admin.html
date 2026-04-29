@@ -103,9 +103,19 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 .mini-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
 .mini-wl{text-align:center;font-size:10px;color:var(--text-muted);padding:3px 0;font-weight:500;text-transform:uppercase;}
 .mini-day{aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;gap:2px;}
-.mini-day.has-event{background:var(--warm);}
 .mini-day.past-day{color:var(--border-strong);}
 .mini-dot{width:4px;height:4px;border-radius:50%;}
+/* Same status colors as instructor calendar */
+.mini-day.am-pending                { background:linear-gradient(to bottom,#FFF3E0 50%,white 50%);         border:1.5px solid #FFB74D; }
+.mini-day.am-approved               { background:linear-gradient(to bottom,#E8F5E9 50%,white 50%);         border:1.5px solid #81C784; }
+.mini-day.pm-pending                { background:linear-gradient(to bottom,white 50%,#FFF3E0 50%);         border:1.5px solid #FFB74D; }
+.mini-day.pm-approved               { background:linear-gradient(to bottom,white 50%,#E8F5E9 50%);         border:1.5px solid #81C784; }
+.mini-day.am-pending.pm-pending     { background:#FFF3E0;                                                   border:1.5px solid #FFB74D; }
+.mini-day.am-approved.pm-approved   { background:#E8F5E9;                                                   border:1.5px solid #81C784; }
+.mini-day.am-approved.pm-pending    { background:linear-gradient(to bottom,#E8F5E9 50%,#FFF3E0 50%);       border:1.5px solid #A5D6A7; }
+.mini-day.am-pending.pm-approved    { background:linear-gradient(to bottom,#FFF3E0 50%,#E8F5E9 50%);       border:1.5px solid #A5D6A7; }
+.mini-day.full-pending              { background:#FFF3E0;                                                   border:1.5px solid #FFB74D; }
+.mini-day.full-approved             { background:#E8F5E9;                                                   border:1.5px solid #81C784; }
 .mini-events-list{padding:0 1rem 1rem;display:flex;flex-direction:column;gap:6px;}
 .mini-event{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius-sm);background:var(--cream);border:0.5px solid var(--border);font-size:13px;flex-wrap:wrap;}
 .me-time{font-weight:500;min-width:42px;color:var(--chocolate);}
@@ -403,7 +413,7 @@ window.showDetail = function(id){
     <div class="detail-row"><div class="detail-key">Categoria</div><div class="detail-val">${b.categoria}</div></div>
     <div class="detail-row"><div class="detail-key">Valor</div><div class="detail-val">R$ ${b.valor.toFixed(2)}</div></div>
     <div class="detail-row"><div class="detail-key">Status</div><div class="detail-val"><span class="status-badge st-${b.status}">${b.status.charAt(0).toUpperCase()+b.status.slice(1)}</span></div></div>
-    <div class="detail-row"><div class="detail-key">Descrição</div><div class="detail-val">${b.descricao}</div></div>
+    <div class="detail-row"><div class="detail-key">Descrição</div><div class="detail-val" style="white-space:pre-wrap">${b.descricao}</div></div>
     <div class="detail-row"><div class="detail-key">Fotos (${fotos.length})</div><div class="detail-val">${photosHtml}</div></div>
     <div class="modal-actions">
       ${b.status==='pendente'
@@ -434,9 +444,23 @@ function renderAdminCal(){
     const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const evs=active.filter(b=>b.data===ds||(b.data2&&b.data2===ds));
     const isPast=new Date(y,m,d)<today;
-    let cls='mini-day'+(isPast?' past-day':'')+(evs.length?' has-event':'');
-    const dots=evs.map(e=>`<div class="mini-dot" style="background:${e.status==='aprovado'?'#2D7A4F':'#C4894A'}"></div>`).join('');
-    grid.innerHTML+=`<div class="${cls}"><span>${d}</span>${dots}</div>`;
+    // Compute status classes same as instructor calendar
+    let amStatus=null, pmStatus=null, fullStatus=null;
+    evs.forEach(b=>{
+      const st=b.status==='aprovado'?'approved':'pending';
+      if(b.duracao==='manha') amStatus=st;
+      else if(b.duracao==='tarde') pmStatus=st;
+      else fullStatus=st;
+    });
+    let cls='mini-day'+(isPast?' past-day':'');
+    if(!isPast){
+      if(fullStatus)  cls+=` full-${fullStatus}`;
+      else {
+        if(amStatus) cls+=` am-${amStatus}`;
+        if(pmStatus) cls+=` pm-${pmStatus}`;
+      }
+    }
+    grid.innerHTML+=`<div class="${cls}"><span>${d}</span></div>`;
   }
   const evsList=document.getElementById('admin-events-list');
   const monthEvs=active.filter(b=>{ const[by,bm]=b.data.split('-'); return parseInt(by)===y&&parseInt(bm)-1===m; }).sort((a,b)=>a.data.localeCompare(b.data)||a.horaInicio.localeCompare(b.horaInicio));
