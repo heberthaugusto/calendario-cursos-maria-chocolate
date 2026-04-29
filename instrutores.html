@@ -39,6 +39,8 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 .dur-card.selected .dur-title,.dur-card.selected .dur-desc{color:white;}
 .dur-desc{font-size:12px;color:var(--text-muted);line-height:1.5;}
 .dur-card.selected .dur-desc{color:rgba(255,255,255,.65);}
+.dur-disabled{opacity:.5;cursor:not-allowed!important;}
+.dur-disabled:hover{border-color:var(--border)!important;background:white!important;}
 .cal-card{background:white;border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
 .cal-head{background:var(--chocolate);padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
 .cal-month-label{font-family:'Cormorant Garamond',serif;font-size:22px;color:white;}
@@ -145,44 +147,17 @@ textarea{resize:vertical;min-height:120px;}
 
 <div class="container">
   <h1 class="page-title">Solicitar data para curso</h1>
-  <p class="page-sub">Escolha a duração, selecione a data disponível e preencha os dados do seu curso.</p>
+  <p class="page-sub">Selecione uma data disponível no calendário para iniciar seu agendamento.</p>
 
   <div class="steps">
-    <div class="step active" id="step1"><div class="step-num">1</div> Duração</div>
-    <div class="step" id="step2"><div class="step-num">2</div> Data</div>
+    <div class="step active" id="step1"><div class="step-num">1</div> Data</div>
+    <div class="step" id="step2"><div class="step-num">2</div> Período</div>
     <div class="step" id="step3"><div class="step-num">3</div> Informações</div>
     <div class="step" id="step4"><div class="step-num">4</div> Confirmação</div>
   </div>
 
-  <!-- STEP 1 -->
-  <div class="view active" id="view-dur">
-    <div class="dur-grid">
-      <div class="dur-card" id="dur-manha" onclick="selectDur('manha')">
-        <div class="dur-icon">🌅</div>
-        <div class="dur-title">Somente manhã</div>
-        <div class="dur-desc">Das <strong>09h às 11h30</strong><br>Tarde fica livre para outro instrutor</div>
-      </div>
-      <div class="dur-card" id="dur-tarde" onclick="selectDur('tarde')">
-        <div class="dur-icon">🌆</div>
-        <div class="dur-title">Somente tarde</div>
-        <div class="dur-desc">Das <strong>13h30 às 17h</strong><br>Manhã fica livre para outro instrutor</div>
-      </div>
-      <div class="dur-card" id="dur-dia" onclick="selectDur('dia')">
-        <div class="dur-icon">☀️</div>
-        <div class="dur-title">Dia inteiro</div>
-        <div class="dur-desc">Das <strong>09h às 17h</strong><br>O dia fica bloqueado por completo</div>
-      </div>
-      <div class="dur-card" id="dur-2dias" onclick="selectDur('2dias')">
-        <div class="dur-icon">📅</div>
-        <div class="dur-title">2 dias inteiros</div>
-        <div class="dur-desc">Das <strong>09h às 17h</strong> por 2 dias consecutivos<br>Ambos os dias ficam bloqueados</div>
-      </div>
-    </div>
-    <button class="next-btn" id="btn-dur" disabled onclick="goToCal()">Escolher data no calendário →</button>
-  </div>
-
-  <!-- STEP 2 -->
-  <div class="view" id="view-cal">
+  <!-- STEP 1: CALENDAR -->
+  <div class="view active" id="view-cal">
     <div class="cal-card">
       <div class="cal-head">
         <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
@@ -199,15 +174,20 @@ textarea{resize:vertical;min-height:120px;}
         <div class="legend-item"><div class="legend-swatch" style="background:#F5E6E0"></div> Dia totalmente ocupado</div>
         <div class="legend-item"><div class="legend-swatch" style="background:var(--warm);border:0.5px solid var(--border-strong)"></div> Indisponível</div>
       </div>
-      <div style="padding:.6rem 1.5rem;border-top:0.5px solid var(--border);background:var(--cream);font-size:11px;color:var(--text-muted)" id="cal-rule-hint"></div>
-    </div>
-    <div class="sel-bar" id="sel-bar">
-      <div><div class="sb-label">Selecionado</div><div class="sb-val" id="sb-text"></div></div>
-      <button class="sb-btn" onclick="clearSel()">Alterar seleção</button>
     </div>
     <div class="warn-box" id="cal-warn"></div>
-    <button class="next-btn" id="btn-cal" disabled onclick="goToForm()">Continuar para informações →</button>
-    <button class="back-btn" onclick="backToDur()">← Alterar duração</button>
+  </div>
+
+  <!-- STEP 2: PERIOD SELECTION -->
+  <div class="view" id="view-dur">
+    <div class="date-bar">
+      <div><div class="db-label">Data selecionada</div><div class="db-val" id="dur-date-display"></div></div>
+      <button class="sb-btn" style="background:var(--warm);color:var(--text);border-color:var(--border-strong)" onclick="backToCal()">← Alterar data</button>
+    </div>
+    <p style="font-size:14px;color:var(--text-muted);margin-bottom:1.25rem">Escolha o período que deseja para ministrar seu curso neste dia:</p>
+    <div class="dur-grid" id="dur-grid"></div>
+    <div class="warn-box" id="dur-warn"></div>
+    <button class="next-btn" id="btn-dur" disabled onclick="goToForm()">Continuar para informações →</button>
   </div>
 
   <!-- STEP 3 -->
@@ -335,21 +315,12 @@ async function uploadPhoto(file){
   return data.secure_url;
 }
 
-// ── STEP 1 ─────────────────────────────────────────────────────────────
-function selectDur(d){
-  dur=d; const cfg=DUR_CONFIG[d]; tIni=cfg.ini; tFim=cfg.fim;
-  document.querySelectorAll('.dur-card').forEach(c=>c.classList.remove('selected'));
-  document.getElementById('dur-'+d).classList.add('selected');
-  document.getElementById('btn-dur').disabled=false;
-}
-function goToCal(){ selDates=[]; waitD2=false; setStep(2); show('view-cal'); renderCal(); document.getElementById('cal-rule-hint').textContent=DUR_RULE_HINT[dur]||''; }
-function backToDur(){ setStep(1); show('view-dur'); }
-
-// ── STEP 2: CALENDAR ───────────────────────────────────────────────────
+// ── HELPERS ───────────────────────────────────────────────────────────
 function toDS(y,m,d){ return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
 function addDays(ds,n){ const d=new Date(ds); d.setDate(d.getDate()+n); return toDS(d.getFullYear(),d.getMonth()+1,d.getDate()); }
 function fmtShort(ds){ const[y,m,d]=ds.split('-'); return `${d}/${m}/${y}`; }
 function fmtLong(ds){ const[y,m,d]=ds.split('-'); const dt=new Date(y,m-1,d); return `${WD[dt.getDay()]}, ${d} de ${MONTHS_PT[m-1]} de ${y}`; }
+function getWeekday(ds){ const[y,m,d]=ds.split('-'); return new Date(y,m-1,d).getDay(); }
 
 function getDayOccupancy(ds){
   const bs=getB().filter(b=>b.data===ds||(b.data2&&b.data2===ds));
@@ -357,26 +328,35 @@ function getDayOccupancy(ds){
   bs.forEach(b=>{ if(b.duracao==='dia'||b.duracao==='2dias') full=true; else if(b.duracao==='manha') am=true; else if(b.duracao==='tarde') pm=true; });
   return {am,pm,full};
 }
-function getWeekday(ds){ const[y,m,d]=ds.split('-'); return new Date(y,m-1,d).getDay(); }
-function isAllowedDay(ds){
+
+// Check if a period is allowed on a given date
+function isPeriodAllowed(ds, period){
   const wd=getWeekday(ds);
-  if(wd===0) return false;
-  if(dur==='manha') return wd>=1&&wd<=6;
-  if(dur==='tarde') return wd>=1&&wd<=5;
-  if(dur==='dia')   return wd>=1&&wd<=5;
-  if(dur==='2dias') return wd>=1&&wd<=4;
+  if(wd===0) return false; // domingo nunca
+  if(period==='manha')  return wd>=1&&wd<=6; // seg-sab
+  if(period==='tarde')  return wd>=1&&wd<=5; // seg-sex
+  if(period==='dia')    return wd>=1&&wd<=5; // seg-sex
+  if(period==='2dias')  return wd>=1&&wd<=4; // seg-qui
   return false;
 }
-function canBook(ds){
-  if(!isAllowedDay(ds)) return false;
+
+function canBookPeriod(ds, period){
+  if(!isPeriodAllowed(ds, period)) return false;
   const{am,pm,full}=getDayOccupancy(ds);
   if(full) return false;
-  if(dur==='dia'||dur==='2dias') return !am&&!pm;
-  if(dur==='manha') return !am;
-  if(dur==='tarde') return !pm;
+  if(period==='dia'||period==='2dias') return !am&&!pm;
+  if(period==='manha') return !am;
+  if(period==='tarde') return !pm;
   return true;
 }
 
+// A day is clickable if it has at least one available period
+function isDayClickable(ds){
+  if(['manha','tarde','dia','2dias'].some(p=>canBookPeriod(ds,p))) return true;
+  return false;
+}
+
+// ── STEP 1: CALENDAR ──────────────────────────────────────────────────
 function renderCal(){
   const y=calCur.getFullYear(),m=calCur.getMonth();
   document.getElementById('cal-label').textContent=MONTHS_PT[m]+' '+y;
@@ -388,47 +368,90 @@ function renderCal(){
   for(let d=1;d<=days;d++){
     const ds=toDS(y,m+1,d);
     const isPast=new Date(y,m,d)<today;
-    const avail=!isPast&&canBook(ds);
-    const isSel=selDates.includes(ds);
-    const isRange=selDates.length===1&&dur==='2dias'&&ds===addDays(selDates[0],1);
+    const clickable=!isPast&&isDayClickable(ds);
     const{am,pm,full}=getDayOccupancy(ds);
     let cls='cal-day';
     if(isPast) cls+=' past';
-    else if(isSel) cls+=' selected';
-    else if(isRange) cls+=' selected-range';
-    else if(!avail) cls+=' blocked-day';
-    else { if(am&&!pm) cls+=' has-am'; else if(pm&&!am) cls+=' has-pm'; else if(am&&pm) cls+=' has-am has-pm'; }
+    else if(!clickable) cls+=' blocked-day';
+    else { if(full) cls+=' blocked-day'; else if(am&&pm) cls+=' blocked-day'; else if(am&&!pm) cls+=' has-am'; else if(pm&&!am) cls+=' has-pm'; }
     let tags='';
-    if(!isPast&&!isSel&&!isRange){
+    if(!isPast){
       const bs=getB().filter(b=>b.data===ds||(b.data2&&b.data2===ds));
       bs.forEach(b=>{ if(b.duracao==='manha') tags+=`<div class="day-tag tag-am">manhã</div>`; else if(b.duracao==='tarde') tags+=`<div class="day-tag tag-pm">tarde</div>`; else tags+=`<div class="day-tag tag-full">dia int.</div>`; });
     }
-    html+=`<div class="${cls}" onclick="selectDay('${ds}',${isPast},${avail})"><div class="day-num">${d}</div><div class="day-tags">${tags}</div></div>`;
+    const onclick=clickable?`onclick="selectDay('${ds}')"`:'' ;
+    html+=`<div class="${cls}" ${onclick}><div class="day-num">${d}</div><div class="day-tags">${tags}</div></div>`;
   }
   document.getElementById('cal-days').innerHTML=html;
 }
 
-window.selectDay = function(ds,isPast,avail){
+window.selectDay = function(ds){
   const warn=document.getElementById('cal-warn'); warn.classList.remove('show');
-  if(isPast) return;
-  if(dur==='2dias'){
-    if(selDates.length===0){
-      if(!avail){warn.textContent='⚠ Este dia não está disponível.';warn.classList.add('show');return;}
-      selDates=[ds]; waitD2=true;
-      updateSelBar('Selecione o 2º dia (deve ser '+fmtShort(addDays(ds,1))+')');
-      document.getElementById('btn-cal').disabled=true;
-      renderCal(); return;
-    } else {
-      const next=addDays(selDates[0],1);
-      if(ds!==next){warn.textContent='⚠ O 2º dia deve ser consecutivo ao 1º ('+fmtShort(next)+').';warn.classList.add('show');return;}
-      if(!canBook(ds)){warn.textContent='⚠ O segundo dia não está disponível.';warn.classList.add('show');return;}
-      selDates=[selDates[0],ds]; waitD2=false;
+  // go to period selection
+  selectedCalDate=ds;
+  document.getElementById('dur-date-display').textContent=fmtLong(ds);
+  renderDurCards(ds);
+  setStep(2); show('view-dur');
+}
+
+window.changeMonth = function(dir){ calCur.setMonth(calCur.getMonth()+dir); renderCal(); }
+window.backToCal = function(){ dur=null; tIni=null; tFim=null; selDates=[]; waitD2=false; setStep(1); show('view-cal'); renderCal(); }
+
+// ── STEP 2: PERIOD SELECTION ──────────────────────────────────────────
+let selectedCalDate=null;
+
+function renderDurCards(ds){
+  const wd=getWeekday(ds);
+  const wdName=WD[wd];
+  const periods=[
+    {id:'manha', icon:'🌅', title:'Somente manhã',    desc:'Das <strong>09h às 11h30</strong>',        rule:'Seg a Sáb'},
+    {id:'tarde', icon:'🌆', title:'Somente tarde',    desc:'Das <strong>13h30 às 17h</strong>',         rule:'Seg a Sex'},
+    {id:'dia',   icon:'☀️', title:'Dia inteiro',       desc:'Das <strong>09h às 17h</strong>',           rule:'Seg a Sex'},
+    {id:'2dias', icon:'📅', title:'2 dias inteiros',  desc:'Das <strong>09h às 17h</strong> · 2 dias',  rule:'1º dia: Seg a Qui'},
+  ];
+  const grid=document.getElementById('dur-grid');
+  grid.innerHTML=periods.map(p=>{
+    const avail=canBookPeriod(ds,p.id);
+    const sel=dur===p.id;
+    let cls='dur-card'+(sel?' selected':'')+(avail?'':' dur-disabled');
+    const onclick=avail?`onclick="selectDur('${p.id}','${ds}')"`:'' ;
+    const unavailMsg=!avail?`<div style="font-size:11px;color:#C0392B;margin-top:6px">Indisponível neste dia</div>`:'';
+    return `<div class="${cls}" ${onclick}>
+      <div class="dur-icon">${p.icon}</div>
+      <div class="dur-title">${p.title}</div>
+      <div class="dur-desc">${p.desc}<br><span style="font-size:11px;opacity:.7">${p.rule}</span></div>
+      ${unavailMsg}
+    </div>`;
+  }).join('');
+}
+
+window.selectDur = function(d, ds){
+  // For 2dias, need to check next day too
+  if(d==='2dias'){
+    const next=addDays(ds,1);
+    const warn=document.getElementById('dur-warn');
+    if(!canBookPeriod(next,'dia')){
+      warn.textContent='⚠ O dia seguinte ('+fmtShort(next)+') não está disponível. Escolha outra data para 2 dias.';
+      warn.classList.add('show');
+      return;
     }
+    warn.classList.remove('show');
+    selDates=[ds,next];
   } else {
-    if(!avail){warn.textContent='⚠ Este dia não está disponível para o período escolhido.';warn.classList.add('show');return;}
     selDates=[ds];
   }
-  renderCal(); updateSelBar(buildSelText()); document.getElementById('btn-cal').disabled=false;
+  dur=d;
+  const cfg=DUR_CONFIG[d]; tIni=cfg.ini; tFim=cfg.fim;
+  document.querySelectorAll('.dur-card').forEach(c=>c.classList.remove('selected'));
+  // re-render to show selection
+  renderDurCards(ds);
+  // re-select visually
+  document.querySelectorAll('.dur-card').forEach(card=>{
+    if(card.querySelector('.dur-title')&&card.querySelector('.dur-title').textContent===
+      {manha:'Somente manhã',tarde:'Somente tarde',dia:'Dia inteiro','2dias':'2 dias inteiros'}[d])
+      card.classList.add('selected');
+  });
+  document.getElementById('btn-dur').disabled=false;
 }
 
 function buildSelText(){
@@ -436,11 +459,9 @@ function buildSelText(){
   if(dur==='2dias') return fmtLong(selDates[0])+' e '+fmtLong(selDates[1])+' · '+dl[dur];
   return fmtLong(selDates[0])+' · '+dl[dur];
 }
-function updateSelBar(txt){ document.getElementById('sb-text').textContent=txt; document.getElementById('sel-bar').classList.add('show'); }
-window.clearSel = function(){ selDates=[]; waitD2=false; document.getElementById('sel-bar').classList.remove('show'); document.getElementById('cal-warn').classList.remove('show'); document.getElementById('btn-cal').disabled=true; renderCal(); }
-window.changeMonth = function(dir){ calCur.setMonth(calCur.getMonth()+dir); renderCal(); }
+
 function goToForm(){ document.getElementById('form-date-text').textContent=buildSelText(); setStep(3); show('view-form'); }
-function backToCal(){ setStep(2); show('view-cal'); renderCal(); }
+function backToForm(){ setStep(3); show('view-form'); }
 
 // ── STEP 3: FORM ───────────────────────────────────────────────────────
 window.handleUpload = function(inp){
@@ -562,8 +583,7 @@ window.submitForm = async function(){
 }
 
 window.resetAll = function(){
-  dur=null; tIni=null; tFim=null; selDates=[]; waitD2=false;
-  document.querySelectorAll('.dur-card').forEach(c=>c.classList.remove('selected'));
+  dur=null; tIni=null; tFim=null; selDates=[]; waitD2=false; selectedCalDate=null;
   document.getElementById('btn-dur').disabled=true;
   ['f-nome','f-email','f-titulo','f-desc'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-cat').value=''; document.getElementById('f-valor').value='';
@@ -572,7 +592,7 @@ window.resetAll = function(){
   document.getElementById('photo-grid').innerHTML='';
   document.getElementById('upload-zone').style.display='block';
   document.getElementById('foto-counter').style.display='none';
-  setStep(1); show('view-dur');
+  setStep(1); show('view-cal'); renderCal();
 }
 
 // ── HELPERS ────────────────────────────────────────────────────────────
@@ -582,12 +602,26 @@ function showLoading(txt){ document.getElementById('loading-overlay').classList.
 function hideLoading(){ document.getElementById('loading-overlay').classList.remove('show'); }
 function setLoadingText(txt){ document.getElementById('loading-text').textContent=txt; }
 
-// Expose nav functions to global scope
-window.selectDur=selectDur; window.goToCal=goToCal; window.backToDur=backToDur;
-window.changeMonth=window.changeMonth; window.goToForm=goToForm; window.backToCal=backToCal;
+// ── EXPOSE ALL TO GLOBAL SCOPE ────────────────────────────────────────
+window.goToForm       = goToForm;
+window.backToCal      = backToCal;
+window.selectDur      = selectDur;
+window.renderCal      = renderCal;
+window.goToForm       = goToForm;
+window.show           = show;
+window.setStep        = setStep;
+window.showLoading    = showLoading;
+window.hideLoading    = hideLoading;
+window.setLoadingText = setLoadingText;
+window.updateDescCount= updateDescCount;
+window.handleUpload   = handleUpload;
+window.removePhoto    = removePhoto;
+window.submitForm     = submitForm;
+window.resetAll       = resetAll;
 
 // Init
 await loadBookings();
+renderCal();
 </script>
 </body>
 </html>
