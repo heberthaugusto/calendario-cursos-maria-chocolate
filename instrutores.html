@@ -268,6 +268,10 @@ textarea{resize:vertical;min-height:120px;}
   </div>
 </div>
 
+<!-- EMAILJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>emailjs.init('Oxq-RQMK4f58cZ9UF');</script>
+
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -523,8 +527,23 @@ window.submitForm = async function(){
     const docRef=await addDoc(collection(db,'agendamentos'),booking);
     booking.id=docRef.id;
     allBookings.push(booking);
-    hideLoading();
+
+    // Send notification email to admin
+    setLoadingText('Enviando notificação...');
     let dateText=fmtLong(booking.data); if(booking.data2) dateText+=' e '+fmtLong(booking.data2);
+    try {
+      await emailjs.send('service_cmptmbu', 'template_9it37tg', {
+        nome: booking.nome,
+        email_instrutor: booking.email,
+        titulo: booking.titulo,
+        data: dateText,
+        horario: booking.horaInicio+'h às '+booking.horaFim+'h',
+        categoria: booking.categoria,
+        valor: booking.valor.toFixed(2),
+      });
+    } catch(emailErr){ console.warn('Erro ao enviar e-mail de notificação:', emailErr); }
+
+    hideLoading();
     document.getElementById('success-details').innerHTML=`
       <div class="sd-row"><span>Data</span><span>${dateText}</span></div>
       <div class="sd-row"><span>Horário</span><span>${booking.horaInicio}h às ${booking.horaFim}h</span></div>
