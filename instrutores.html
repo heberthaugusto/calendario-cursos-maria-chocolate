@@ -58,14 +58,19 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 .cal-day.has-am{background:linear-gradient(to bottom,#FAEBD7 50%,white 50%);}
 .cal-day.has-pm{background:linear-gradient(to bottom,white 50%,#E8D5F0 50%);}
 .cal-day.has-am.has-pm{background:#F5E6E0;cursor:not-allowed;}
-.cal-day.pending{background:#FFF3E0;border:1.5px solid #FFB74D;}
-.cal-day.pending .day-num{color:#E65100;}
-.cal-day.approved{background:#E8F5E9;border:1.5px solid #81C784;}
-.cal-day.approved .day-num{color:#1B5E20;}
-.cal-day.pending.has-am{background:linear-gradient(to bottom,#FFF3E0 50%,white 50%);}
-.cal-day.pending.has-pm{background:linear-gradient(to bottom,white 50%,#FFF3E0 50%);}
-.cal-day.approved.has-am{background:linear-gradient(to bottom,#E8F5E9 50%,white 50%);}
-.cal-day.approved.has-pm{background:linear-gradient(to bottom,white 50%,#E8F5E9 50%);}
+/* Status colors - all combinations */
+/* am-pending = top orange, pm-pending = bottom orange */
+/* am-approved = top green, pm-approved = bottom green */
+.cal-day.am-pending                          { background:linear-gradient(to bottom,#FFF3E0 50%,white 50%);         border:1.5px solid #FFB74D; }
+.cal-day.am-approved                         { background:linear-gradient(to bottom,#E8F5E9 50%,white 50%);         border:1.5px solid #81C784; }
+.cal-day.pm-pending                          { background:linear-gradient(to bottom,white 50%,#FFF3E0 50%);         border:1.5px solid #FFB74D; }
+.cal-day.pm-approved                         { background:linear-gradient(to bottom,white 50%,#E8F5E9 50%);         border:1.5px solid #81C784; }
+.cal-day.am-pending.pm-pending               { background:#FFF3E0;                                                   border:1.5px solid #FFB74D; }
+.cal-day.am-approved.pm-approved             { background:#E8F5E9;                                                   border:1.5px solid #81C784; }
+.cal-day.am-approved.pm-pending              { background:linear-gradient(to bottom,#E8F5E9 50%,#FFF3E0 50%);       border:1.5px solid #A5D6A7; }
+.cal-day.am-pending.pm-approved              { background:linear-gradient(to bottom,#FFF3E0 50%,#E8F5E9 50%);       border:1.5px solid #A5D6A7; }
+.cal-day.full-pending                        { background:#FFF3E0;                                                   border:1.5px solid #FFB74D; }
+.cal-day.full-approved                       { background:#E8F5E9;                                                   border:1.5px solid #81C784; }
 .cal-day.selected{background:var(--chocolate)!important;border-color:var(--chocolate)!important;}
 .cal-day.selected-range{background:rgba(61,31,10,.1)!important;border-color:var(--border-strong)!important;}
 .cal-day.selected .day-num{color:white;}
@@ -339,11 +344,16 @@ function getDayOccupancy(ds){
 }
 
 function getDayStatus(ds){
-  // Returns dominant visual status: 'approved','pending','free'
+  // Returns {amStatus, pmStatus, fullStatus} each: null | 'pending' | 'approved'
   const bs=allBookings.filter(b=>b.status!=='reprovado'&&(b.data===ds||(b.data2&&b.data2===ds)));
-  if(!bs.length) return 'free';
-  if(bs.some(b=>b.status==='aprovado')) return 'approved';
-  return 'pending';
+  let amStatus=null, pmStatus=null, fullStatus=null;
+  bs.forEach(b=>{
+    const st = b.status==='aprovado' ? 'approved' : 'pending';
+    if(b.duracao==='manha') amStatus=st;
+    else if(b.duracao==='tarde') pmStatus=st;
+    else if(b.duracao==='dia'||b.duracao==='2dias') fullStatus=st;
+  });
+  return {amStatus, pmStatus, fullStatus};
 }
 
 // Check if a period is allowed on a given date
@@ -387,14 +397,22 @@ function renderCal(){
     const isPast=new Date(y,m,d)<today;
     const clickable=!isPast&&isDayClickable(ds);
     const{am,pm,full}=getDayOccupancy(ds);
-    const dayStatus=getDayStatus(ds);
+    const{amStatus,pmStatus,fullStatus}=getDayStatus(ds);
     let cls='cal-day';
     if(isPast) cls+=' past';
     else if(!clickable) cls+=' blocked-day';
     else { if(full) cls+=' blocked-day'; else if(am&&pm) cls+=' blocked-day'; else if(am&&!pm) cls+=' has-am'; else if(pm&&!am) cls+=' has-pm'; }
-    // Apply status color
-    if(!isPast && dayStatus==='pending') cls+=' pending';
-    else if(!isPast && dayStatus==='approved') cls+=' approved';
+    // Apply granular status colors
+    if(!isPast){
+      if(fullStatus==='pending')  cls+=' full-pending';
+      else if(fullStatus==='approved') cls+=' full-approved';
+      else {
+        if(amStatus==='pending')  cls+=' am-pending';
+        if(amStatus==='approved') cls+=' am-approved';
+        if(pmStatus==='pending')  cls+=' pm-pending';
+        if(pmStatus==='approved') cls+=' pm-approved';
+      }
+    }
     let tags='';
     if(!isPast){
       const bs=allBookings.filter(b=>b.status!=='reprovado'&&(b.data===ds||(b.data2&&b.data2===ds)));
