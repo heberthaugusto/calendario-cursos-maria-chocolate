@@ -60,19 +60,15 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 .cal-day.has-am{background:linear-gradient(to bottom,#FAEBD7 50%,white 50%);}
 .cal-day.has-pm{background:linear-gradient(to bottom,white 50%,#E8D5F0 50%);}
 .cal-day.has-am.has-pm{background:#F5E6E0;cursor:not-allowed;}
-/* Status colors - all combinations */
-/* am-pending = top orange, pm-pending = bottom orange */
-/* am-approved = top green, pm-approved = bottom green */
-.cal-day.am-pending                          { background:linear-gradient(to bottom,#FFF3E0 50%,white 50%);         border:1.5px solid #FFB74D; }
-.cal-day.am-approved                         { background:linear-gradient(to bottom,#E8F5E9 50%,white 50%);         border:1.5px solid #81C784; }
-.cal-day.pm-pending                          { background:linear-gradient(to bottom,white 50%,#FFF3E0 50%);         border:1.5px solid #FFB74D; }
-.cal-day.pm-approved                         { background:linear-gradient(to bottom,white 50%,#E8F5E9 50%);         border:1.5px solid #81C784; }
-.cal-day.am-pending.pm-pending               { background:#FFF3E0;                                                   border:1.5px solid #FFB74D; }
-.cal-day.am-approved.pm-approved             { background:#E8F5E9;                                                   border:1.5px solid #81C784; }
-.cal-day.am-approved.pm-pending              { background:linear-gradient(to bottom,#E8F5E9 50%,#FFF3E0 50%);       border:1.5px solid #A5D6A7; }
-.cal-day.am-pending.pm-approved              { background:linear-gradient(to bottom,#FFF3E0 50%,#E8F5E9 50%);       border:1.5px solid #A5D6A7; }
-.cal-day.full-pending                        { background:#FFF3E0;                                                   border:1.5px solid #FFB74D; }
-.cal-day.full-approved                       { background:#E8F5E9;                                                   border:1.5px solid #81C784; }
+/* Status colors - simplified */
+.cal-day.has-pending  { background:#FFF3E0; border:1.5px solid #FFB74D; }
+.cal-day.has-approved { background:#E8F5E9; border:1.5px solid #81C784; }
+.cal-day.has-pending.has-approved { background:#FFF3E0; border:1.5px solid #FFB74D; }
+/* availability labels inside day */
+.day-avail { width:100%; display:flex; flex-direction:column; gap:1px; margin-top:2px; }
+.avail-label { font-size:9px; font-weight:500; text-align:center; border-radius:3px; padding:1px 2px; line-height:1.3; }
+.avail-manha { background:rgba(255,255,255,0.7); color:#2E7D32; }
+.avail-tarde { background:rgba(255,255,255,0.7); color:#1565C0; }
 .cal-day.selected{background:var(--chocolate)!important;border-color:var(--chocolate)!important;}
 .cal-day.selected-range{background:rgba(61,31,10,.1)!important;border-color:var(--border-strong)!important;}
 .cal-day.selected .day-num{color:white;}
@@ -188,6 +184,7 @@ textarea{resize:vertical;min-height:120px;}
         <div class="legend-item"><div class="legend-swatch" style="background:#E8F5E9;border:1.5px solid #81C784"></div> Confirmado</div>
         <div class="legend-item"><div class="legend-swatch" style="background:#FDECEA;border:1.5px solid #EF9A9A"></div> Data bloqueada</div>
         <div class="legend-item"><div class="legend-swatch" style="background:var(--warm);border:0.5px solid var(--border-strong)"></div> Indisponível</div>
+        <div class="legend-item" style="font-size:10px;color:var(--text-muted)">Texto <span style="color:#2E7D32;font-weight:500">manhã</span> / <span style="color:#1565C0;font-weight:500">tarde</span> = período ainda livre</div>
       </div>
     </div>
     <div class="warn-box" id="cal-warn"></div>
@@ -353,16 +350,17 @@ function getDayOccupancy(ds){
 }
 
 function getDayStatus(ds){
-  // Returns {amStatus, pmStatus, fullStatus} each: null | 'pending' | 'approved'
+  // Returns hasPending, hasApproved, amBooked, pmBooked
   const bs=allBookings.filter(b=>b.status!=='reprovado'&&(b.data===ds||(b.data2&&b.data2===ds)));
-  let amStatus=null, pmStatus=null, fullStatus=null;
+  let hasPending=false, hasApproved=false, amBooked=false, pmBooked=false, fullBooked=false;
   bs.forEach(b=>{
-    const st = b.status==='aprovado' ? 'approved' : 'pending';
-    if(b.duracao==='manha') amStatus=st;
-    else if(b.duracao==='tarde') pmStatus=st;
-    else if(b.duracao==='dia'||b.duracao==='2dias') fullStatus=st;
+    if(b.status==='pendente') hasPending=true;
+    else if(b.status==='aprovado') hasApproved=true;
+    if(b.duracao==='manha') amBooked=true;
+    else if(b.duracao==='tarde') pmBooked=true;
+    else if(b.duracao==='dia'||b.duracao==='2dias') fullBooked=true;
   });
-  return {amStatus, pmStatus, fullStatus};
+  return {hasPending, hasApproved, amBooked, pmBooked, fullBooked};
 }
 
 // Check if a period is allowed on a given date
@@ -408,33 +406,31 @@ function renderCal(){
     const isPast=new Date(y,m,d)<minDate;
     const clickable=!isPast&&isDayClickable(ds);
     const{am,pm,full}=getDayOccupancy(ds);
-    const{amStatus,pmStatus,fullStatus}=getDayStatus(ds);
+    const{hasPending,hasApproved,amBooked,pmBooked,fullBooked}=getDayStatus(ds);
     const isAdminBlocked=getBlockedDates().some(b=>b.date===ds);
     let cls='cal-day';
     if(isPast) cls+=' past';
     else if(isAdminBlocked) cls+=' admin-blocked';
     else if(!clickable) cls+=' blocked-day';
-    else { if(full) cls+=' blocked-day'; else if(am&&pm) cls+=' blocked-day'; else if(am&&!pm) cls+=' has-am'; else if(pm&&!am) cls+=' has-pm'; }
-    // Apply granular status colors
-    if(!isPast){
-      if(fullStatus==='pending')  cls+=' full-pending';
-      else if(fullStatus==='approved') cls+=' full-approved';
-      else {
-        if(amStatus==='pending')  cls+=' am-pending';
-        if(amStatus==='approved') cls+=' am-approved';
-        if(pmStatus==='pending')  cls+=' pm-pending';
-        if(pmStatus==='approved') cls+=' pm-approved';
-      }
+    else if(full||(am&&pm)) cls+=' blocked-day';
+    // Simple color: any pending = orange, all confirmed = green
+    if(!isPast && !isAdminBlocked){
+      if(hasPending)       cls+=' has-pending';
+      else if(hasApproved) cls+=' has-approved';
+    }
+    // Availability labels: show free periods when one is booked but not full day
+    let availHtml='';
+    if(!isPast && !isAdminBlocked && (amBooked||pmBooked) && !fullBooked && !(amBooked&&pmBooked)){
+      availHtml='<div class="day-avail">';
+      availHtml+=!amBooked?'<div class="avail-label avail-manha">manhã</div>':'<div style="height:12px"></div>';
+      availHtml+=!pmBooked?'<div class="avail-label avail-tarde">tarde</div>':'';
+      availHtml+='</div>';
     }
     let tags='';
-    if(!isPast){
-      const bs=allBookings.filter(b=>b.status!=='reprovado'&&(b.data===ds||(b.data2&&b.data2===ds)));
-      bs.forEach(b=>{ if(b.duracao==='manha') tags+=`<div class="day-tag tag-am">manhã</div>`; else if(b.duracao==='tarde') tags+=`<div class="day-tag tag-pm">tarde</div>`; else tags+=`<div class="day-tag tag-full">dia int.</div>`; });
-    }
     const blockedEntry=getBlockedDates().find(b=>b.date===ds);
     const onclick=clickable?`onclick="selectDay('${ds}')"`:'' ;
     const title=blockedEntry?(blockedEntry.reason||'Data bloqueada'):'';
-    html+=`<div class="${cls}" ${onclick} ${title?`title="${title}"`:''}><div class="day-num">${d}</div><div class="day-tags">${tags}</div></div>`;
+    html+=`<div class="${cls}" ${onclick} ${title?`title="${title}"`:''}><div class="day-num">${d}</div>${availHtml}</div>`;
   }
   document.getElementById('cal-days').innerHTML=html;
 }
