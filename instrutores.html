@@ -7,17 +7,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --cream: #F9F5EF;
-  --warm: #EDE4D5;
-  --caramel: #C4894A;
-  --caramel-dark: #9E6A2E;
-  --chocolate: #3D1F0A;
-  --text: #2A1505;
-  --text-muted: #8B6A4E;
-  --border: rgba(61,31,10,0.12);
-  --border-strong: rgba(61,31,10,0.25);
-  --radius: 12px;
-  --radius-sm: 8px;
+  --cream: #F9F5EF; --warm: #EDE4D5; --caramel: #C4894A; --caramel-dark: #9E6A2E;
+  --chocolate: #3D1F0A; --text: #2A1505; --text-muted: #8B6A4E;
+  --border: rgba(61,31,10,0.12); --border-strong: rgba(61,31,10,0.25);
+  --radius: 12px; --radius-sm: 8px; --green: #2D7A4F;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;}
@@ -28,7 +21,7 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 .container{max-width:800px;margin:0 auto;padding:2.5rem 1.5rem 4rem;}
 .page-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--chocolate);margin-bottom:.25rem;}
 .page-sub{font-size:14px;color:var(--text-muted);margin-bottom:2.5rem;}
-.steps{display:flex;gap:0;margin-bottom:2rem;}
+.steps{display:flex;margin-bottom:2rem;}
 .step{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);padding:8px 12px;background:var(--warm);border:0.5px solid var(--border);flex:1;}
 .step:first-child{border-radius:var(--radius-sm) 0 0 var(--radius-sm);}
 .step:last-child{border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
@@ -37,8 +30,6 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 .step.done{background:var(--caramel);color:white;border-color:var(--caramel);}
 .step-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;background:rgba(0,0,0,.1);}
 .view{display:none;}.view.active{display:block;}
-
-/* DURATION */
 .dur-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:1.5rem;}
 .dur-card{background:white;border:1.5px solid var(--border);border-radius:var(--radius);padding:1.5rem 1.25rem;cursor:pointer;transition:all .15s;text-align:center;}
 .dur-card:hover{border-color:var(--caramel);background:#FDF8F2;}
@@ -48,18 +39,6 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 .dur-card.selected .dur-title,.dur-card.selected .dur-desc{color:white;}
 .dur-desc{font-size:12px;color:var(--text-muted);line-height:1.5;}
 .dur-card.selected .dur-desc{color:rgba(255,255,255,.65);}
-
-/* TIME PICKER */
-.time-section{background:white;border:0.5px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1rem;}
-.ts-title{font-size:13px;font-weight:500;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:1rem;}
-.time-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
-.time-row:last-child{margin-bottom:0;}
-.t-label{font-size:13px;color:var(--text-muted);min-width:58px;}
-input[type=time]{font-family:'DM Sans',sans-serif;font-size:14px;background:var(--cream);border:0.5px solid var(--border-strong);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);outline:none;width:130px;}
-input[type=time]:focus{border-color:var(--caramel);}
-.t-hint{font-size:12px;color:var(--text-muted);background:var(--warm);border-radius:var(--radius-sm);padding:4px 10px;}
-
-/* CALENDAR */
 .cal-card{background:white;border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
 .cal-head{background:var(--chocolate);padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
 .cal-month-label{font-family:'Cormorant Garamond',serif;font-size:22px;color:white;}
@@ -69,7 +48,7 @@ input[type=time]:focus{border-color:var(--caramel);}
 .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:6px;}
 .cal-weekday{text-align:center;font-size:11px;font-weight:500;color:var(--text-muted);letter-spacing:.05em;text-transform:uppercase;padding:4px 0;}
 .cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-.cal-day{min-height:58px;border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;padding:6px 3px 4px;cursor:pointer;border:0.5px solid transparent;transition:all .15s;position:relative;overflow:hidden;}
+.cal-day{min-height:58px;border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;padding:6px 3px 4px;cursor:pointer;border:0.5px solid transparent;transition:all .15s;overflow:hidden;}
 .cal-day:hover:not(.empty):not(.past):not(.blocked-day){background:var(--warm);border-color:var(--border);}
 .cal-day.empty{cursor:default;}
 .cal-day.past{opacity:.35;cursor:not-allowed;}
@@ -79,9 +58,8 @@ input[type=time]:focus{border-color:var(--caramel);}
 .cal-day.has-am.has-pm{background:#F5E6E0;cursor:not-allowed;}
 .cal-day.selected{background:var(--chocolate)!important;border-color:var(--chocolate)!important;}
 .cal-day.selected-range{background:rgba(61,31,10,.1)!important;border-color:var(--border-strong)!important;}
-.cal-day.selected .day-num,.cal-day.selected-range .day-num{color:var(--chocolate);}
 .cal-day.selected .day-num{color:white;}
-.day-num{font-size:13px;font-weight:400;line-height:1;color:var(--text);}
+.day-num{font-size:13px;line-height:1;color:var(--text);}
 .cal-day.past .day-num,.cal-day.blocked-day .day-num{color:var(--text-muted);}
 .day-tags{width:100%;margin-top:3px;display:flex;flex-direction:column;gap:2px;}
 .day-tag{font-size:9px;text-align:center;border-radius:3px;padding:1px 3px;line-height:1.3;}
@@ -91,25 +69,19 @@ input[type=time]:focus{border-color:var(--caramel);}
 .cal-legend{display:flex;gap:10px;flex-wrap:wrap;padding:.875rem 1.5rem;border-top:0.5px solid var(--border);background:var(--cream);}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);}
 .legend-swatch{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
-
-/* SUMMARY BAR */
 .sel-bar{background:var(--chocolate);color:white;border-radius:var(--radius);padding:1rem 1.5rem;margin-top:1rem;display:none;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
 .sel-bar.show{display:flex;}
 .sb-label{font-size:11px;opacity:.55;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
 .sb-val{font-family:'Cormorant Garamond',serif;font-size:17px;}
-.sb-btn{background:rgba(255,255,255,.12);border:0.5px solid rgba(255,255,255,.25);border-radius:var(--radius-sm);padding:6px 14px;font-size:12px;color:white;cursor:pointer;white-space:nowrap;}
+.sb-btn{background:rgba(255,255,255,.12);border:0.5px solid rgba(255,255,255,.25);border-radius:var(--radius-sm);padding:6px 14px;font-size:12px;color:white;cursor:pointer;}
 .sb-btn:hover{background:rgba(255,255,255,.22);}
-
 .warn-box{background:#FEF3E2;border:0.5px solid #F0A500;border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#7A4A00;margin-top:8px;display:none;}
 .warn-box.show{display:block;}
-
 .next-btn{width:100%;margin-top:1rem;background:var(--caramel);color:white;border:none;border-radius:var(--radius);padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:background .15s;}
 .next-btn:hover{background:var(--caramel-dark);}
 .next-btn:disabled{background:var(--border-strong);cursor:not-allowed;}
 .back-btn{width:100%;margin-top:8px;background:none;color:var(--text-muted);border:0.5px solid var(--border-strong);border-radius:var(--radius);padding:11px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;}
 .back-btn:hover{background:var(--warm);}
-
-/* FORM */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .form-full{grid-column:1/-1;}
 .form-group{display:flex;flex-direction:column;gap:6px;}
@@ -117,17 +89,16 @@ label{font-size:13px;font-weight:500;color:var(--text-muted);}
 label .req{color:var(--caramel);margin-left:2px;}
 input[type=text],input[type=email],input[type=number],select,textarea{font-family:'DM Sans',sans-serif;font-size:14px;background:white;border:0.5px solid var(--border-strong);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);outline:none;transition:border-color .15s;width:100%;}
 input:focus,select:focus,textarea:focus{border-color:var(--caramel);}
-textarea{resize:vertical;min-height:100px;}
+textarea{resize:vertical;min-height:120px;}
 .prefix-input{display:flex;}
 .prefix-input span{background:var(--warm);border:0.5px solid var(--border-strong);border-right:none;border-radius:var(--radius-sm) 0 0 var(--radius-sm);padding:10px 12px;font-size:14px;color:var(--text-muted);}
 .prefix-input input{border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
 .upload-zone{border:1.5px dashed var(--border-strong);border-radius:var(--radius);padding:2rem 1.5rem;text-align:center;cursor:pointer;background:var(--warm);transition:all .15s;}
-.upload-zone:hover,.upload-zone.has-file{border-color:var(--caramel);background:#FDF6EC;border-style:solid;}
+.upload-zone:hover{border-color:var(--caramel);background:#FDF6EC;}
 .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:12px;}
 .photo-thumb{position:relative;aspect-ratio:1;border-radius:var(--radius-sm);overflow:hidden;border:0.5px solid var(--border);}
 .photo-thumb img{width:100%;height:100%;object-fit:cover;}
-.photo-thumb .ph-remove{position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(0,0,0,.55);border:none;border-radius:50%;color:white;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
-.photo-thumb .ph-err{position:absolute;inset:0;background:rgba(192,57,43,.75);display:flex;align-items:center;justify-content:center;font-size:10px;color:white;text-align:center;padding:4px;line-height:1.3;}
+.ph-remove{position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(0,0,0,.55);border:none;border-radius:50%;color:white;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .photo-add{aspect-ratio:1;border-radius:var(--radius-sm);border:1.5px dashed var(--border-strong);background:var(--warm);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;color:var(--text-muted);transition:all .15s;}
 .photo-add:hover{border-color:var(--caramel);color:var(--caramel);}
 .field-err input,.field-err select,.field-err textarea,.field-err .upload-zone{border-color:#C0392B!important;}
@@ -138,8 +109,6 @@ textarea{resize:vertical;min-height:100px;}
 .date-bar{background:var(--warm);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:8px;}
 .db-label{font-size:12px;color:var(--text-muted);}
 .db-val{font-size:14px;font-weight:500;color:var(--chocolate);}
-
-/* SUCCESS */
 .success-wrap{text-align:center;padding:3rem 2rem;background:white;border-radius:var(--radius);border:0.5px solid var(--border);}
 .success-icon{width:72px;height:72px;background:#F0F9F4;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:32px;}
 .success-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--chocolate);margin-bottom:.5rem;}
@@ -151,11 +120,23 @@ textarea{resize:vertical;min-height:100px;}
 .sd-row span:last-child{font-weight:500;color:var(--chocolate);text-align:right;}
 .new-btn{background:none;border:0.5px solid var(--border-strong);border-radius:var(--radius);padding:10px 24px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;color:var(--text-muted);}
 .new-btn:hover{background:var(--warm);}
+/* LOADING OVERLAY */
+.loading-overlay{position:fixed;inset:0;background:rgba(61,31,10,.6);display:none;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:1rem;}
+.loading-overlay.show{display:flex;}
+.loading-spinner{width:48px;height:48px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--caramel);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{color:white;font-size:14px;opacity:.8;}
 </style>
 </head>
 <body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loading-text">Enviando solicitação...</div>
+</div>
+
 <header>
-  <div class="logo-mark">A</div>
+  <div class="logo-mark">M</div>
   <div>
     <div class="logo-text">Maria Chocolate</div>
     <div class="logo-sub">Agendamento de cursos</div>
@@ -173,7 +154,7 @@ textarea{resize:vertical;min-height:100px;}
     <div class="step" id="step4"><div class="step-num">4</div> Confirmação</div>
   </div>
 
-  <!-- STEP 1: DURATION -->
+  <!-- STEP 1 -->
   <div class="view active" id="view-dur">
     <div class="dur-grid">
       <div class="dur-card" id="dur-manha" onclick="selectDur('manha')">
@@ -197,11 +178,10 @@ textarea{resize:vertical;min-height:100px;}
         <div class="dur-desc">Das <strong>09h às 17h</strong> por 2 dias consecutivos<br>Ambos os dias ficam bloqueados</div>
       </div>
     </div>
-
     <button class="next-btn" id="btn-dur" disabled onclick="goToCal()">Escolher data no calendário →</button>
   </div>
 
-  <!-- STEP 2: CALENDAR -->
+  <!-- STEP 2 -->
   <div class="view" id="view-cal">
     <div class="cal-card">
       <div class="cal-head">
@@ -221,27 +201,19 @@ textarea{resize:vertical;min-height:100px;}
       </div>
       <div style="padding:.6rem 1.5rem;border-top:0.5px solid var(--border);background:var(--cream);font-size:11px;color:var(--text-muted)" id="cal-rule-hint"></div>
     </div>
-
     <div class="sel-bar" id="sel-bar">
-      <div>
-        <div class="sb-label">Selecionado</div>
-        <div class="sb-val" id="sb-text"></div>
-      </div>
+      <div><div class="sb-label">Selecionado</div><div class="sb-val" id="sb-text"></div></div>
       <button class="sb-btn" onclick="clearSel()">Alterar seleção</button>
     </div>
     <div class="warn-box" id="cal-warn"></div>
-
     <button class="next-btn" id="btn-cal" disabled onclick="goToForm()">Continuar para informações →</button>
     <button class="back-btn" onclick="backToDur()">← Alterar duração</button>
   </div>
 
-  <!-- STEP 3: FORM -->
+  <!-- STEP 3 -->
   <div class="view" id="view-form">
     <div class="date-bar">
-      <div>
-        <div class="db-label">Data e horário escolhidos</div>
-        <div class="db-val" id="form-date-text"></div>
-      </div>
+      <div><div class="db-label">Data e horário escolhidos</div><div class="db-val" id="form-date-text"></div></div>
       <button class="sb-btn" style="background:var(--warm);color:var(--text);border-color:var(--border-strong)" onclick="backToCal()">← Alterar</button>
     </div>
 
@@ -253,30 +225,38 @@ textarea{resize:vertical;min-height:100px;}
 
     <div class="sec-title">Sobre o curso</div>
     <div class="form-grid">
-      <div class="form-group" id="fg-cat"><label>Categoria <span class="req">*</span></label><select id="f-cat"><option value="">Selecionar...</option><option value="Chocolateria">🍫 Chocolateria</option><option value="Confeitaria">🎂 Confeitaria</option><option value="Salgados">🥐 Salgados</option><option value="Fornecedor">🏪 Fornecedor</option></select><span class="err-msg">Selecione a categoria</span></div>
-      <div class="form-group" id="fg-valor"><label>Valor do curso <span class="req">*</span></label><div class="prefix-input"><span>R$</span><input type="number" id="f-valor" placeholder="0,00" min="0" step="0.01" /></div><span class="err-msg">Informe o valor</span></div>
+      <div class="form-group" id="fg-cat"><label>Categoria <span class="req">*</span></label>
+        <select id="f-cat"><option value="">Selecionar...</option><option value="Chocolateria">🍫 Chocolateria</option><option value="Confeitaria">🎂 Confeitaria</option><option value="Salgados">🥐 Salgados</option><option value="Fornecedor">🏪 Fornecedor</option></select>
+        <span class="err-msg">Selecione a categoria</span></div>
+      <div class="form-group" id="fg-valor"><label>Valor do curso <span class="req">*</span></label>
+        <div class="prefix-input"><span>R$</span><input type="number" id="f-valor" placeholder="0,00" min="0" step="0.01" /></div>
+        <span class="err-msg">Informe o valor</span></div>
       <div class="form-group form-full" id="fg-titulo"><label>Título do curso <span class="req">*</span></label><input type="text" id="f-titulo" placeholder="Ex: Trufas Belgas com Ganache de Maracujá" /><span class="err-msg">Informe o título</span></div>
-      <div class="form-group form-full" id="fg-desc"><label>Descrição — o que os alunos vão aprender <span class="req">*</span></label><textarea id="f-desc" placeholder="Descreva os tópicos, técnicas e materiais que serão abordados..." oninput="updateDescCount()"></textarea>
-        <div style="font-size:12px;color:var(--text-muted);text-align:right;margin-top:4px"><span id="desc-count">0</span>/500 caracteres mínimos</div><span class="err-msg">A descrição deve ter pelo menos 500 caracteres</span></div>
+      <div class="form-group form-full" id="fg-desc">
+        <label>Descrição — o que os alunos vão aprender <span class="req">*</span></label>
+        <textarea id="f-desc" placeholder="Descreva os tópicos, técnicas e materiais que serão abordados..." oninput="updateDescCount()"></textarea>
+        <div style="font-size:12px;color:var(--text-muted);text-align:right;margin-top:4px"><span id="desc-count">0</span>/500 caracteres mínimos</div>
+        <span class="err-msg">A descrição deve ter pelo menos 500 caracteres</span>
+      </div>
     </div>
 
-    <div class="sec-title">Foto para divulgação</div>
+    <div class="sec-title">Fotos para divulgação</div>
     <div class="form-group form-full" id="fg-foto">
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('f-foto').click()">
         <div style="font-size:28px;margin-bottom:8px">📷</div>
-        <div id="upload-title" style="font-size:14px;font-weight:500">Clique para selecionar as fotos</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Formato <strong>JPG ou PNG</strong> · Mínimo <strong>1080×1080 px</strong> · Mínimo <strong>2 fotos</strong> · Máximo <strong>5 fotos</strong></div>
+        <div style="font-size:14px;font-weight:500">Clique para selecionar as fotos</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Formato <strong>JPG ou PNG</strong> · Mínimo <strong>1080×1080 px</strong> · Entre <strong>2 e 5 fotos</strong></div>
       </div>
       <input type="file" id="f-foto" accept="image/jpeg,image/png" multiple style="display:none" onchange="handleUpload(this)" />
       <div class="photo-grid" id="photo-grid"></div>
       <div id="foto-counter" style="font-size:12px;font-weight:500;margin-top:6px;display:none"></div>
-      <span class="err-msg" id="foto-err-msg">Envie entre 2 e 5 fotos válidas (mín. 1080×1080 px)</span>
+      <span class="err-msg">Envie entre 2 e 5 fotos válidas (mín. 1080×1080 px)</span>
     </div>
 
     <button class="next-btn" onclick="submitForm()" style="margin-top:2rem">Enviar solicitação</button>
   </div>
 
-  <!-- STEP 4: SUCCESS -->
+  <!-- STEP 4 -->
   <div class="view" id="view-success">
     <div class="success-wrap">
       <div class="success-icon">✓</div>
@@ -288,83 +268,101 @@ textarea{resize:vertical;min-height:100px;}
   </div>
 </div>
 
-<script>
-const STORAGE_KEY = 'atelie_agendamentos_v1';
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDcnXi9F35BMBJDHc90V3fFFJ1kwHCWJdY",
+  authDomain: "calendario-maria-chocolate.firebaseapp.com",
+  projectId: "calendario-maria-chocolate",
+  storageBucket: "calendario-maria-chocolate.firebasestorage.app",
+  messagingSenderId: "436747668282",
+  appId: "1:436747668282:web:afd64bbf9e1a6ed06cde03"
+};
+
+const CLOUDINARY_CLOUD = 'dgomborzj';
+const CLOUDINARY_PRESET = 'maria_chocolate_unsigned';
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
 const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const WD = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-
-let dur = null, tIni = null, tFim = null;
-let selDates = [], waitD2 = false;
-let calCur = new Date(); calCur.setDate(1);
-
-function getB(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch{ return []; } }
-function saveB(b){ localStorage.setItem(STORAGE_KEY, JSON.stringify(b)); }
-
-// ── STEP 1 ────────────────────────────────────────────────────────────
 const DUR_CONFIG = {
   manha:   { ini:'09:00', fim:'11:30' },
   tarde:   { ini:'13:30', fim:'17:00' },
   dia:     { ini:'09:00', fim:'17:00' },
   '2dias': { ini:'09:00', fim:'17:00' },
 };
+const DUR_RULE_HINT = {
+  manha:   '📅 Manhã: disponível de segunda-feira a sábado',
+  tarde:   '📅 Tarde: disponível apenas de segunda-feira a sexta-feira',
+  dia:     '📅 Dia inteiro: disponível apenas de segunda-feira a sexta-feira',
+  '2dias': '📅 2 dias consecutivos: o 1º dia deve ser de segunda-feira a quinta-feira',
+};
 
+let dur=null, tIni=null, tFim=null;
+let selDates=[], waitD2=false;
+let calCur=new Date(); calCur.setDate(1);
+let validPhotos=[];
+let allBookings=[];
+
+// ── FIRESTORE ──────────────────────────────────────────────────────────
+async function loadBookings(){
+  try {
+    const snap = await getDocs(collection(db,'agendamentos'));
+    allBookings = snap.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e){ console.error('Erro ao carregar agendamentos',e); }
+}
+
+function getB(){ return allBookings.filter(b=>b.status!=='reprovado'); }
+
+// ── CLOUDINARY ─────────────────────────────────────────────────────────
+async function uploadPhoto(file){
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_PRESET);
+  fd.append('folder', 'maria-chocolate');
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {method:'POST', body:fd});
+  if(!res.ok) throw new Error('Falha no upload da foto');
+  const data = await res.json();
+  return data.secure_url;
+}
+
+// ── STEP 1 ─────────────────────────────────────────────────────────────
 function selectDur(d){
-  dur = d;
-  const cfg = DUR_CONFIG[d];
-  tIni = cfg.ini; tFim = cfg.fim;
+  dur=d; const cfg=DUR_CONFIG[d]; tIni=cfg.ini; tFim=cfg.fim;
   document.querySelectorAll('.dur-card').forEach(c=>c.classList.remove('selected'));
   document.getElementById('dur-'+d).classList.add('selected');
   document.getElementById('btn-dur').disabled=false;
 }
-
-const DUR_RULE_HINT = {
-  manha:  '📅 Manhã: disponível de segunda-feira a sábado',
-  tarde:  '📅 Tarde: disponível apenas de segunda-feira a sexta-feira',
-  dia:    '📅 Dia inteiro: disponível apenas de segunda-feira a sexta-feira',
-  '2dias':'📅 2 dias consecutivos: o 1º dia deve ser de segunda-feira a quinta-feira',
-};
-
-function goToCal(){
-  selDates=[]; waitD2=false;
-  setStep(2); show('view-cal'); renderCal();
-  const hint = document.getElementById('cal-rule-hint');
-  if(hint) hint.textContent = DUR_RULE_HINT[dur] || '';
-}
+function goToCal(){ selDates=[]; waitD2=false; setStep(2); show('view-cal'); renderCal(); document.getElementById('cal-rule-hint').textContent=DUR_RULE_HINT[dur]||''; }
 function backToDur(){ setStep(1); show('view-dur'); }
 
-// ── STEP 2: CALENDAR ──────────────────────────────────────────────────
+// ── STEP 2: CALENDAR ───────────────────────────────────────────────────
 function toDS(y,m,d){ return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
 function addDays(ds,n){ const d=new Date(ds); d.setDate(d.getDate()+n); return toDS(d.getFullYear(),d.getMonth()+1,d.getDate()); }
 function fmtShort(ds){ const[y,m,d]=ds.split('-'); return `${d}/${m}/${y}`; }
 function fmtLong(ds){ const[y,m,d]=ds.split('-'); const dt=new Date(y,m-1,d); return `${WD[dt.getDay()]}, ${d} de ${MONTHS_PT[m-1]} de ${y}`; }
 
-// Returns which turno(s) are booked on a date
 function getDayOccupancy(ds){
-  const bs = getB().filter(b=>b.status!=='reprovado'&&(b.data===ds||(b.data2&&b.data2===ds)));
-  let am=false, pm=false, full=false;
-  bs.forEach(b=>{
-    if(b.duracao==='dia'||b.duracao==='2dias') full=true;
-    else if(b.duracao==='manha') am=true;
-    else if(b.duracao==='tarde') pm=true;
-  });
+  const bs=getB().filter(b=>b.data===ds||(b.data2&&b.data2===ds));
+  let am=false,pm=false,full=false;
+  bs.forEach(b=>{ if(b.duracao==='dia'||b.duracao==='2dias') full=true; else if(b.duracao==='manha') am=true; else if(b.duracao==='tarde') pm=true; });
   return {am,pm,full};
 }
-
-function getWeekday(ds){
-  const[y,m,d]=ds.split('-');
-  return new Date(y,m-1,d).getDay(); // 0=Dom,1=Seg...6=Sab
-}
-
+function getWeekday(ds){ const[y,m,d]=ds.split('-'); return new Date(y,m-1,d).getDay(); }
 function isAllowedDay(ds){
   const wd=getWeekday(ds);
-  if(wd===0) return false;                          // domingo: nunca
-  if(dur==='manha') return wd>=1 && wd<=6;          // seg–sab
-  if(dur==='tarde') return wd>=1 && wd<=5;          // seg–sex
-  if(dur==='dia')   return wd>=1 && wd<=5;          // seg–sex
-  if(dur==='2dias') return wd>=1 && wd<=4;          // seg–qui (1º dia)
+  if(wd===0) return false;
+  if(dur==='manha') return wd>=1&&wd<=6;
+  if(dur==='tarde') return wd>=1&&wd<=5;
+  if(dur==='dia')   return wd>=1&&wd<=5;
+  if(dur==='2dias') return wd>=1&&wd<=4;
   return false;
 }
-
 function canBook(ds){
   if(!isAllowedDay(ds)) return false;
   const{am,pm,full}=getDayOccupancy(ds);
@@ -376,11 +374,10 @@ function canBook(ds){
 }
 
 function renderCal(){
-  const y=calCur.getFullYear(), m=calCur.getMonth();
+  const y=calCur.getFullYear(),m=calCur.getMonth();
   document.getElementById('cal-label').textContent=MONTHS_PT[m]+' '+y;
   document.getElementById('cal-weekdays').innerHTML=WD.map(w=>`<div class="cal-weekday">${w}</div>`).join('');
-  const first=new Date(y,m,1).getDay();
-  const days=new Date(y,m+1,0).getDate();
+  const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
   const today=new Date(); today.setHours(0,0,0,0);
   let html='';
   for(let i=0;i<first;i++) html+=`<div class="cal-day empty"></div>`;
@@ -389,167 +386,97 @@ function renderCal(){
     const isPast=new Date(y,m,d)<today;
     const avail=!isPast&&canBook(ds);
     const isSel=selDates.includes(ds);
-    const isRange=selDates.length===1&&dur==='2dias'&&!isSel&&ds===addDays(selDates[0],1);
+    const isRange=selDates.length===1&&dur==='2dias'&&ds===addDays(selDates[0],1);
     const{am,pm,full}=getDayOccupancy(ds);
     let cls='cal-day';
     if(isPast) cls+=' past';
     else if(isSel) cls+=' selected';
     else if(isRange) cls+=' selected-range';
     else if(!avail) cls+=' blocked-day';
-    else {
-      if(am&&!pm) cls+=' has-am';
-      else if(pm&&!am) cls+=' has-pm';
-      else if(am&&pm) cls+=' has-am has-pm';
-    }
+    else { if(am&&!pm) cls+=' has-am'; else if(pm&&!am) cls+=' has-pm'; else if(am&&pm) cls+=' has-am has-pm'; }
     let tags='';
     if(!isPast&&!isSel&&!isRange){
-      const bs=getB().filter(b=>b.status!=='reprovado'&&(b.data===ds||(b.data2&&b.data2===ds)));
-      bs.forEach(b=>{
-        if(b.duracao==='manha') tags+=`<div class="day-tag tag-am">manhã</div>`;
-        else if(b.duracao==='tarde') tags+=`<div class="day-tag tag-pm">tarde</div>`;
-        else tags+=`<div class="day-tag tag-full">dia int.</div>`;
-      });
+      const bs=getB().filter(b=>b.data===ds||(b.data2&&b.data2===ds));
+      bs.forEach(b=>{ if(b.duracao==='manha') tags+=`<div class="day-tag tag-am">manhã</div>`; else if(b.duracao==='tarde') tags+=`<div class="day-tag tag-pm">tarde</div>`; else tags+=`<div class="day-tag tag-full">dia int.</div>`; });
     }
-    html+=`<div class="${cls}" onclick="selectDay('${ds}',${isPast},${avail})">
-      <div class="day-num">${d}</div>
-      <div class="day-tags">${tags}</div>
-    </div>`;
+    html+=`<div class="${cls}" onclick="selectDay('${ds}',${isPast},${avail})"><div class="day-num">${d}</div><div class="day-tags">${tags}</div></div>`;
   }
   document.getElementById('cal-days').innerHTML=html;
 }
 
-function selectDay(ds, isPast, avail){
-  const warn=document.getElementById('cal-warn');
-  warn.classList.remove('show');
+window.selectDay = function(ds,isPast,avail){
+  const warn=document.getElementById('cal-warn'); warn.classList.remove('show');
   if(isPast) return;
-
   if(dur==='2dias'){
     if(selDates.length===0){
-      if(!avail){ warn.textContent='⚠ Este dia não está disponível para o período escolhido.'; warn.classList.add('show'); return; }
+      if(!avail){warn.textContent='⚠ Este dia não está disponível.';warn.classList.add('show');return;}
       selDates=[ds]; waitD2=true;
       updateSelBar('Selecione o 2º dia (deve ser '+fmtShort(addDays(ds,1))+')');
       document.getElementById('btn-cal').disabled=true;
       renderCal(); return;
     } else {
       const next=addDays(selDates[0],1);
-      if(ds!==next){ warn.textContent='⚠ O 2º dia deve ser consecutivo ao 1º ('+fmtShort(next)+').'; warn.classList.add('show'); return; }
-      if(!canBook(ds)){ warn.textContent='⚠ O segundo dia escolhido não está disponível.'; warn.classList.add('show'); return; }
+      if(ds!==next){warn.textContent='⚠ O 2º dia deve ser consecutivo ao 1º ('+fmtShort(next)+').';warn.classList.add('show');return;}
+      if(!canBook(ds)){warn.textContent='⚠ O segundo dia não está disponível.';warn.classList.add('show');return;}
       selDates=[selDates[0],ds]; waitD2=false;
     }
   } else {
-    if(!avail){ warn.textContent='⚠ Este dia não está disponível para o período escolhido.'; warn.classList.add('show'); return; }
+    if(!avail){warn.textContent='⚠ Este dia não está disponível para o período escolhido.';warn.classList.add('show');return;}
     selDates=[ds];
   }
-  renderCal();
-  updateSelBar(buildSelText());
-  document.getElementById('btn-cal').disabled=false;
+  renderCal(); updateSelBar(buildSelText()); document.getElementById('btn-cal').disabled=false;
 }
 
 function buildSelText(){
-  const dl={
-    manha:'Manhã · 09h às 11h30',
-    tarde:'Tarde · 13h30 às 17h',
-    dia:'Dia inteiro · 09h às 17h',
-    '2dias':'2 dias inteiros · 09h às 17h'
-  };
+  const dl={manha:'Manhã · 09h às 11h30',tarde:'Tarde · 13h30 às 17h',dia:'Dia inteiro · 09h às 17h','2dias':'2 dias inteiros · 09h às 17h'};
   if(dur==='2dias') return fmtLong(selDates[0])+' e '+fmtLong(selDates[1])+' · '+dl[dur];
   return fmtLong(selDates[0])+' · '+dl[dur];
 }
-
-function updateSelBar(txt){
-  document.getElementById('sb-text').textContent=txt;
-  document.getElementById('sel-bar').classList.add('show');
-}
-
-function clearSel(){
-  selDates=[]; waitD2=false;
-  document.getElementById('sel-bar').classList.remove('show');
-  document.getElementById('cal-warn').classList.remove('show');
-  document.getElementById('btn-cal').disabled=true;
-  renderCal();
-}
-
-function changeMonth(dir){ calCur.setMonth(calCur.getMonth()+dir); renderCal(); }
-
-function goToForm(){
-  document.getElementById('form-date-text').textContent=buildSelText();
-  setStep(3); show('view-form');
-}
+function updateSelBar(txt){ document.getElementById('sb-text').textContent=txt; document.getElementById('sel-bar').classList.add('show'); }
+window.clearSel = function(){ selDates=[]; waitD2=false; document.getElementById('sel-bar').classList.remove('show'); document.getElementById('cal-warn').classList.remove('show'); document.getElementById('btn-cal').disabled=true; renderCal(); }
+window.changeMonth = function(dir){ calCur.setMonth(calCur.getMonth()+dir); renderCal(); }
+function goToForm(){ document.getElementById('form-date-text').textContent=buildSelText(); setStep(3); show('view-form'); }
 function backToCal(){ setStep(2); show('view-cal'); renderCal(); }
 
-// ── STEP 3: FORM ──────────────────────────────────────────────────────
-let validPhotos = []; // stores {file, url} of approved photos
-
-function handleUpload(inp){
+// ── STEP 3: FORM ───────────────────────────────────────────────────────
+window.handleUpload = function(inp){
   if(!inp.files||!inp.files.length) return;
-  const files = Array.from(inp.files);
-  inp.value = '';
-  const slots = 5 - validPhotos.length;
-  if(slots <= 0) return;
-  const allowed = files.slice(0, slots);
-  allowed.forEach(file => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      const ok = img.width >= 1080 && img.height >= 1080;
-      if(ok){
-        validPhotos.push({file, url});
-      }
-      renderPhotoGrid(ok ? null : file.name + ' — ' + img.width + '×' + img.height + 'px (mínimo 1080×1080)');
+  const files=Array.from(inp.files); inp.value='';
+  const slots=5-validPhotos.length; if(slots<=0) return;
+  files.slice(0,slots).forEach(file=>{
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+    img.onload=()=>{
+      if(img.width>=1080&&img.height>=1080){ validPhotos.push({file,url}); renderPhotoGrid(null); }
+      else renderPhotoGrid(file.name+' — '+img.width+'×'+img.height+'px (mínimo 1080×1080)');
     };
-    img.src = url;
+    img.src=url;
   });
 }
 
 function renderPhotoGrid(errName){
-  const grid = document.getElementById('photo-grid');
-  const fg = document.getElementById('fg-foto');
-  const count = validPhotos.length;
-  const atMax = count >= 5;
-  // build thumbs from validPhotos
-  let html = validPhotos.map((p,i) => `
-    <div class="photo-thumb">
-      <img src="${p.url}" />
-      <button class="ph-remove" onclick="removePhoto(${i})" title="Remover">✕</button>
-    </div>`).join('');
-  // add button only if below max
-  if(!atMax) html += `<div class="photo-add" onclick="document.getElementById('f-foto').click()" title="Adicionar mais fotos">+</div>`;
-  grid.innerHTML = html;
-  // counter badge
-  const counterEl = document.getElementById('foto-counter');
-  if(counterEl){
-    counterEl.textContent = count + '/5 fotos';
-    counterEl.style.color = count >= 2 ? 'var(--green,#2D7A4F)' : 'var(--caramel)';
-    counterEl.style.display = count > 0 ? 'block' : 'none';
-  }
-  // show/hide upload zone placeholder
-  document.getElementById('upload-zone').style.display = count ? 'none' : 'block';
-  // error for rejected file
+  const grid=document.getElementById('photo-grid'), fg=document.getElementById('fg-foto');
+  const count=validPhotos.length, atMax=count>=5;
+  let html=validPhotos.map((p,i)=>`<div class="photo-thumb"><img src="${p.url}"/><button class="ph-remove" onclick="removePhoto(${i})">✕</button></div>`).join('');
+  if(!atMax) html+=`<div class="photo-add" onclick="document.getElementById('f-foto').click()">+</div>`;
+  grid.innerHTML=html;
+  const cEl=document.getElementById('foto-counter');
+  if(cEl){ cEl.textContent=count+'/5 fotos'; cEl.style.color=count>=2?'var(--green)':'var(--caramel)'; cEl.style.display=count>0?'block':'none'; }
+  document.getElementById('upload-zone').style.display=count?'none':'block';
   if(errName){
-    const errDiv = document.createElement('div');
-    errDiv.style.cssText='font-size:12px;color:#C0392B;margin-top:6px;';
-    errDiv.textContent='⚠ Foto recusada (resolução insuficiente): ' + errName;
-    grid.appendChild(errDiv);
-    setTimeout(()=>errDiv.remove(), 5000);
+    const d=document.createElement('div'); d.style.cssText='font-size:12px;color:#C0392B;margin-top:6px;';
+    d.textContent='⚠ Foto recusada: '+errName; grid.appendChild(d); setTimeout(()=>d.remove(),5000);
   }
-  if(count >= 2) fg.classList.remove('field-err');
+  if(count>=2) fg.classList.remove('field-err');
 }
 
-function removePhoto(idx){
-  URL.revokeObjectURL(validPhotos[idx].url);
-  validPhotos.splice(idx, 1);
-  renderPhotoGrid(null);
-  if(validPhotos.length === 0){
-    document.getElementById('upload-zone').style.display = 'block';
-  }
-}
+window.removePhoto = function(idx){ URL.revokeObjectURL(validPhotos[idx].url); validPhotos.splice(idx,1); renderPhotoGrid(null); if(!validPhotos.length) document.getElementById('upload-zone').style.display='block'; }
 
-function updateDescCount(){
-  const len = document.getElementById('f-desc').value.trim().length;
-  const el = document.getElementById('desc-count');
-  el.textContent = len;
-  el.style.color = len >= 500 ? 'var(--green,#2D7A4F)' : len >= 300 ? 'var(--caramel)' : 'var(--text-muted)';
-  if(len >= 500) document.getElementById('fg-desc').classList.remove('field-err');
+window.updateDescCount = function(){
+  const len=document.getElementById('f-desc').value.trim().length;
+  const el=document.getElementById('desc-count'); el.textContent=len;
+  el.style.color=len>=500?'var(--green)':len>=300?'var(--caramel)':'var(--text-muted)';
+  if(len>=500) document.getElementById('fg-desc').classList.remove('field-err');
 }
 
 function validate(){
@@ -567,52 +494,81 @@ function validate(){
   return ok;
 }
 
-function submitForm(){
+window.submitForm = async function(){
   if(!validate()){ document.querySelector('.field-err')?.scrollIntoView({behavior:'smooth',block:'center'}); return; }
-  const booking={
-    id:Date.now(), data:selDates[0], data2:selDates[1]||null,
-    duracao:dur, horaInicio:tIni, horaFim:tFim,
-    nome:document.getElementById('f-nome').value.trim(),
-    email:document.getElementById('f-email').value.trim(),
-    categoria:document.getElementById('f-cat').value,
-    titulo:document.getElementById('f-titulo').value.trim(),
-    descricao:document.getElementById('f-desc').value.trim(),
-    valor:parseFloat(document.getElementById('f-valor').value),
-    status:'pendente', criadoEm:new Date().toISOString(),
-  };
-  const b=getB(); b.push(booking); saveB(b);
-  const dl={manha:'Somente manhã',tarde:'Somente tarde',dia:'Dia inteiro','2dias':'2 dias inteiros'};
-  let dateText=fmtLong(booking.data); if(booking.data2) dateText+=' e '+fmtLong(booking.data2);
-  document.getElementById('success-details').innerHTML=`
-    <div class="sd-row"><span>Data</span><span>${dateText}</span></div>
-    <div class="sd-row"><span>Horário</span><span>${booking.horaInicio}h às ${booking.horaFim}h</span></div>
-    <div class="sd-row"><span>Duração</span><span>${dl[booking.duracao]}</span></div>
-    <div class="sd-row"><span>Curso</span><span>${booking.titulo}</span></div>
-    <div class="sd-row"><span>Categoria</span><span>${booking.categoria}</span></div>
-    <div class="sd-row"><span>Valor</span><span>R$ ${booking.valor.toFixed(2)}</span></div>
-    <div class="sd-row"><span>Status</span><span style="color:var(--caramel)">Aguardando aprovação</span></div>
-  `;
-  setStep(4); show('view-success');
+  showLoading('Enviando fotos...');
+  try {
+    // Upload all photos to Cloudinary
+    const photoUrls=[];
+    for(let i=0;i<validPhotos.length;i++){
+      setLoadingText(`Enviando foto ${i+1} de ${validPhotos.length}...`);
+      const url=await uploadPhoto(validPhotos[i].file);
+      photoUrls.push(url);
+    }
+    setLoadingText('Salvando solicitação...');
+    const dl={manha:'Somente manhã',tarde:'Somente tarde',dia:'Dia inteiro','2dias':'2 dias inteiros'};
+    const booking={
+      data:selDates[0], data2:selDates[1]||null,
+      duracao:dur, horaInicio:tIni, horaFim:tFim,
+      nome:document.getElementById('f-nome').value.trim(),
+      email:document.getElementById('f-email').value.trim(),
+      categoria:document.getElementById('f-cat').value,
+      titulo:document.getElementById('f-titulo').value.trim(),
+      descricao:document.getElementById('f-desc').value.trim(),
+      valor:parseFloat(document.getElementById('f-valor').value),
+      fotos:photoUrls,
+      status:'pendente',
+      criadoEm:new Date().toISOString(),
+    };
+    const docRef=await addDoc(collection(db,'agendamentos'),booking);
+    booking.id=docRef.id;
+    allBookings.push(booking);
+    hideLoading();
+    let dateText=fmtLong(booking.data); if(booking.data2) dateText+=' e '+fmtLong(booking.data2);
+    document.getElementById('success-details').innerHTML=`
+      <div class="sd-row"><span>Data</span><span>${dateText}</span></div>
+      <div class="sd-row"><span>Horário</span><span>${booking.horaInicio}h às ${booking.horaFim}h</span></div>
+      <div class="sd-row"><span>Duração</span><span>${dl[booking.duracao]}</span></div>
+      <div class="sd-row"><span>Curso</span><span>${booking.titulo}</span></div>
+      <div class="sd-row"><span>Categoria</span><span>${booking.categoria}</span></div>
+      <div class="sd-row"><span>Valor</span><span>R$ ${booking.valor.toFixed(2)}</span></div>
+      <div class="sd-row"><span>Fotos</span><span>${photoUrls.length} foto(s) enviada(s)</span></div>
+      <div class="sd-row"><span>Status</span><span style="color:var(--caramel)">Aguardando aprovação</span></div>
+    `;
+    setStep(4); show('view-success');
+  } catch(e){
+    hideLoading();
+    alert('Erro ao enviar solicitação. Por favor tente novamente.\n'+e.message);
+  }
 }
 
-function resetAll(){
+window.resetAll = function(){
   dur=null; tIni=null; tFim=null; selDates=[]; waitD2=false;
   document.querySelectorAll('.dur-card').forEach(c=>c.classList.remove('selected'));
-  document.getElementById('time-section').style.display='none';
   document.getElementById('btn-dur').disabled=true;
   ['f-nome','f-email','f-titulo','f-desc'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-cat').value=''; document.getElementById('f-valor').value='';
   document.getElementById('f-foto').value='';
-  validPhotos.forEach(p=>URL.revokeObjectURL(p.url));
-  validPhotos=[];
+  validPhotos.forEach(p=>URL.revokeObjectURL(p.url)); validPhotos=[];
   document.getElementById('photo-grid').innerHTML='';
-  document.getElementById('upload-title').textContent='Clique para selecionar as fotos';
   document.getElementById('upload-zone').style.display='block';
+  document.getElementById('foto-counter').style.display='none';
   setStep(1); show('view-dur');
 }
 
+// ── HELPERS ────────────────────────────────────────────────────────────
 function show(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 function setStep(n){ for(let i=1;i<=4;i++){ const el=document.getElementById('step'+i); el.classList.remove('active','done'); if(i<n)el.classList.add('done'); else if(i===n)el.classList.add('active'); } }
+function showLoading(txt){ document.getElementById('loading-overlay').classList.add('show'); setLoadingText(txt); }
+function hideLoading(){ document.getElementById('loading-overlay').classList.remove('show'); }
+function setLoadingText(txt){ document.getElementById('loading-text').textContent=txt; }
+
+// Expose nav functions to global scope
+window.selectDur=selectDur; window.goToCal=goToCal; window.backToDur=backToDur;
+window.changeMonth=window.changeMonth; window.goToForm=goToForm; window.backToCal=backToCal;
+
+// Init
+await loadBookings();
 </script>
 </body>
 </html>
