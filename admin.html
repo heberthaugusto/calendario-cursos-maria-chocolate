@@ -62,6 +62,8 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 .act-reject:hover{background:var(--red);color:white;}
 .act-detail{border-color:var(--border-strong);color:var(--text-muted);background:white;}
 .act-detail:hover{background:var(--warm);}
+.act-cancel{border-color:#E65100;color:#E65100;background:#FFF3E0;}
+.act-cancel:hover{background:#E65100;color:white;}
 .empty-state{padding:4rem 2rem;text-align:center;color:var(--text-muted);}
 .empty-icon{font-size:40px;margin-bottom:1rem;opacity:.4;}
 .empty-title{font-size:16px;font-weight:500;margin-bottom:4px;color:var(--text);}
@@ -275,8 +277,9 @@ window.updateStatus = async function(id, status){
         : 'Você pode acessar o calendário e escolher outra data disponível. Em caso de dúvidas, entre em contato pelo e-mail compras.mariachocolate@gmail.com.';
       try {
         await emailjs.send('service_cmptmbu', 'template_d67s04f', {
-          nome: b.nome,
+          to_email: b.email,
           email_instrutor: b.email,
+          nome: b.nome,
           titulo: b.titulo,
           data: dateText,
           horario: b.horaInicio+'h às '+b.horaFim+'h',
@@ -286,9 +289,40 @@ window.updateStatus = async function(id, status){
           mensagem_resultado,
           instrucoes,
         });
+        console.log('E-mail enviado para:', b.email);
       } catch(emailErr){ console.warn('Erro ao enviar e-mail de resultado:', emailErr); }
     }
   } catch(e){ alert('Erro ao atualizar: '+e.message); }
+}
+
+// ── CANCEL APPROVAL ───────────────────────────────────────────────────
+window.cancelApproval = async function(id){
+  if(!confirm('Cancelar a aprovação irá liberar esta data no calendário. Deseja continuar?')) return;
+  try {
+    await updateDoc(doc(db,'agendamentos',id),{status:'reprovado'});
+    const idx=allBookings.findIndex(b=>b.id===id);
+    if(idx>-1){
+      const b=allBookings[idx];
+      allBookings[idx].status='reprovado';
+      // Notify instructor
+      let dateText=fmtLong(b.data); if(b.data2) dateText+=' e '+fmtLong(b.data2);
+      try {
+        await emailjs.send('service_cmptmbu','template_d67s04f',{
+          nome: b.nome,
+          email_instrutor: b.email,
+          titulo: b.titulo,
+          data: dateText,
+          horario: b.horaInicio+'h às '+b.horaFim+'h',
+          categoria: b.categoria,
+          valor: b.valor.toFixed(2),
+          resultado: 'cancelada',
+          mensagem_resultado: '❌ Sua data confirmada foi cancelada pelo administrador. A data foi liberada no calendário.',
+          instrucoes: 'Você pode acessar o calendário e escolher uma nova data. Em caso de dúvidas, entre em contato pelo e-mail compras.mariachocolate@gmail.com.',
+        });
+      } catch(e){ console.warn('Erro ao enviar e-mail:', e); }
+    }
+    renderStats(); renderList(); renderAdminCal();
+  } catch(e){ alert('Erro ao cancelar: '+e.message); }
 }
 
 // ── RENDER ─────────────────────────────────────────────────────────────
@@ -331,7 +365,12 @@ function renderList(){
       <div><span class="cat-badge ${catClass(b.categoria)}">${b.categoria}</span></div>
       <div style="font-size:13px;font-weight:500">R$ ${b.valor.toFixed(2)}</div>
       <div class="actions">
-        ${b.status==='pendente'?`<button class="act-btn act-approve" onclick="updateStatus('${b.id}','aprovado')">Aprovar</button><button class="act-btn act-reject" onclick="updateStatus('${b.id}','reprovado')">Reprovar</button>`:`<span class="status-badge st-${b.status}">${b.status.charAt(0).toUpperCase()+b.status.slice(1)}</span>`}
+        ${b.status==='pendente'
+          ? `<button class="act-btn act-approve" onclick="updateStatus('${b.id}','aprovado')">Aprovar</button><button class="act-btn act-reject" onclick="updateStatus('${b.id}','reprovado')">Reprovar</button>`
+          : b.status==='aprovado'
+            ? `<span class="status-badge st-aprovado">Aprovado</span><button class="act-btn act-cancel" onclick="cancelApproval('${b.id}')" title="Cancelar aprovação e liberar data">Cancelar</button>`
+            : `<span class="status-badge st-reprovado">Reprovado</span>`
+        }
         <button class="act-btn act-detail" onclick="showDetail('${b.id}')">Ver</button>
       </div>
     </div>`;
@@ -367,7 +406,13 @@ window.showDetail = function(id){
     <div class="detail-row"><div class="detail-key">Descrição</div><div class="detail-val">${b.descricao}</div></div>
     <div class="detail-row"><div class="detail-key">Fotos (${fotos.length})</div><div class="detail-val">${photosHtml}</div></div>
     <div class="modal-actions">
-      ${b.status==='pendente'?`<button class="act-btn act-approve" style="padding:8px 18px;font-size:13px" onclick="updateStatus('${b.id}','aprovado');closeModal()">Aprovar</button><button class="act-btn act-reject" style="padding:8px 18px;font-size:13px" onclick="updateStatus('${b.id}','reprovado');closeModal()">Reprovar</button>`:''}
+      ${b.status==='pendente'
+        ? `<button class="act-btn act-approve" style="padding:8px 18px;font-size:13px" onclick="updateStatus('${b.id}','aprovado');closeModal()">Aprovar</button>
+           <button class="act-btn act-reject" style="padding:8px 18px;font-size:13px" onclick="updateStatus('${b.id}','reprovado');closeModal()">Reprovar</button>`
+        : b.status==='aprovado'
+          ? `<button class="act-btn act-cancel" style="padding:8px 18px;font-size:13px" onclick="cancelApproval('${b.id}');closeModal()">Cancelar aprovação e liberar data</button>`
+          : ''
+      }
       <button class="modal-close" onclick="closeModal()">Fechar</button>
     </div>`;
   document.getElementById('modal').classList.add('open');

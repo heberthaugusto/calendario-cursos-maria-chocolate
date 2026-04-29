@@ -58,6 +58,14 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 .cal-day.has-am{background:linear-gradient(to bottom,#FAEBD7 50%,white 50%);}
 .cal-day.has-pm{background:linear-gradient(to bottom,white 50%,#E8D5F0 50%);}
 .cal-day.has-am.has-pm{background:#F5E6E0;cursor:not-allowed;}
+.cal-day.pending{background:#FFF3E0;border:1.5px solid #FFB74D;}
+.cal-day.pending .day-num{color:#E65100;}
+.cal-day.approved{background:#E8F5E9;border:1.5px solid #81C784;}
+.cal-day.approved .day-num{color:#1B5E20;}
+.cal-day.pending.has-am{background:linear-gradient(to bottom,#FFF3E0 50%,white 50%);}
+.cal-day.pending.has-pm{background:linear-gradient(to bottom,white 50%,#FFF3E0 50%);}
+.cal-day.approved.has-am{background:linear-gradient(to bottom,#E8F5E9 50%,white 50%);}
+.cal-day.approved.has-pm{background:linear-gradient(to bottom,white 50%,#E8F5E9 50%);}
 .cal-day.selected{background:var(--chocolate)!important;border-color:var(--chocolate)!important;}
 .cal-day.selected-range{background:rgba(61,31,10,.1)!important;border-color:var(--border-strong)!important;}
 .cal-day.selected .day-num{color:white;}
@@ -169,9 +177,9 @@ textarea{resize:vertical;min-height:120px;}
         <div class="cal-days" id="cal-days"></div>
       </div>
       <div class="cal-legend">
-        <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(to bottom,#FAEBD7 50%,white 50%)"></div> Manhã ocupada</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(to bottom,white 50%,#E8D5F0 50%)"></div> Tarde ocupada</div>
-        <div class="legend-item"><div class="legend-swatch" style="background:#F5E6E0"></div> Dia totalmente ocupado</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#FFF3E0;border:1.5px solid #FFB74D"></div> Reservado — pendente</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#E8F5E9;border:1.5px solid #81C784"></div> Confirmado</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#F5E6E0"></div> Totalmente ocupado</div>
         <div class="legend-item"><div class="legend-swatch" style="background:var(--warm);border:0.5px solid var(--border-strong)"></div> Indisponível</div>
       </div>
     </div>
@@ -323,10 +331,19 @@ function fmtLong(ds){ const[y,m,d]=ds.split('-'); const dt=new Date(y,m-1,d); re
 function getWeekday(ds){ const[y,m,d]=ds.split('-'); return new Date(y,m-1,d).getDay(); }
 
 function getDayOccupancy(ds){
-  const bs=getB().filter(b=>b.data===ds||(b.data2&&b.data2===ds));
+  // Only count non-reprovado bookings for blocking
+  const bs=allBookings.filter(b=>b.status!=='reprovado'&&(b.data===ds||(b.data2&&b.data2===ds)));
   let am=false,pm=false,full=false;
   bs.forEach(b=>{ if(b.duracao==='dia'||b.duracao==='2dias') full=true; else if(b.duracao==='manha') am=true; else if(b.duracao==='tarde') pm=true; });
   return {am,pm,full};
+}
+
+function getDayStatus(ds){
+  // Returns dominant visual status: 'approved','pending','free'
+  const bs=allBookings.filter(b=>b.status!=='reprovado'&&(b.data===ds||(b.data2&&b.data2===ds)));
+  if(!bs.length) return 'free';
+  if(bs.some(b=>b.status==='aprovado')) return 'approved';
+  return 'pending';
 }
 
 // Check if a period is allowed on a given date
@@ -370,13 +387,17 @@ function renderCal(){
     const isPast=new Date(y,m,d)<today;
     const clickable=!isPast&&isDayClickable(ds);
     const{am,pm,full}=getDayOccupancy(ds);
+    const dayStatus=getDayStatus(ds);
     let cls='cal-day';
     if(isPast) cls+=' past';
     else if(!clickable) cls+=' blocked-day';
     else { if(full) cls+=' blocked-day'; else if(am&&pm) cls+=' blocked-day'; else if(am&&!pm) cls+=' has-am'; else if(pm&&!am) cls+=' has-pm'; }
+    // Apply status color
+    if(!isPast && dayStatus==='pending') cls+=' pending';
+    else if(!isPast && dayStatus==='approved') cls+=' approved';
     let tags='';
     if(!isPast){
-      const bs=getB().filter(b=>b.data===ds||(b.data2&&b.data2===ds));
+      const bs=allBookings.filter(b=>b.status!=='reprovado'&&(b.data===ds||(b.data2&&b.data2===ds)));
       bs.forEach(b=>{ if(b.duracao==='manha') tags+=`<div class="day-tag tag-am">manhã</div>`; else if(b.duracao==='tarde') tags+=`<div class="day-tag tag-pm">tarde</div>`; else tags+=`<div class="day-tag tag-full">dia int.</div>`; });
     }
     const onclick=clickable?`onclick="selectDay('${ds}')"`:'' ;
@@ -407,7 +428,7 @@ function renderDurCards(ds){
     {id:'manha', icon:'🌅', title:'Somente manhã',    desc:'Das <strong>09h às 11h30</strong>',        rule:'Seg a Sáb'},
     {id:'tarde', icon:'🌆', title:'Somente tarde',    desc:'Das <strong>13h30 às 17h</strong>',         rule:'Seg a Sex'},
     {id:'dia',   icon:'☀️', title:'Dia inteiro',       desc:'Das <strong>09h às 17h</strong>',           rule:'Seg a Sex'},
-    {id:'2dias', icon:'📅', title:'2 dias inteiros',  desc:'Das <strong>09h às 17h</strong> · 2 dias',  rule:'1º dia: Seg a Qui'},
+    {id:'2dias', icon:'📅', title:'2 dias inteiros',  desc:`Das <strong>09h às 17h</strong> · 2 dias consecutivos<br>Reserva também: <strong>${fmtShort(addDays(ds,1))}</strong>`,  rule:'1º dia: Seg a Qui'},
   ];
   const grid=document.getElementById('dur-grid');
   grid.innerHTML=periods.map(p=>{
@@ -426,29 +447,35 @@ function renderDurCards(ds){
 }
 
 window.selectDur = function(d, ds){
-  // For 2dias, need to check next day too
+  const warn=document.getElementById('dur-warn');
+  warn.classList.remove('show');
+
   if(d==='2dias'){
     const next=addDays(ds,1);
-    const warn=document.getElementById('dur-warn');
+    // Check next day availability
     if(!canBookPeriod(next,'dia')){
       warn.textContent='⚠ O dia seguinte ('+fmtShort(next)+') não está disponível. Escolha outra data para 2 dias.';
       warn.classList.add('show');
       return;
     }
-    warn.classList.remove('show');
-    selDates=[ds,next];
+    selDates=[ds, next];
+    // Update date bar to show both days
+    document.getElementById('dur-date-display').textContent=
+      fmtLong(ds)+' e '+fmtLong(next);
   } else {
     selDates=[ds];
+    document.getElementById('dur-date-display').textContent=fmtLong(ds);
   }
+
   dur=d;
   const cfg=DUR_CONFIG[d]; tIni=cfg.ini; tFim=cfg.fim;
-  document.querySelectorAll('.dur-card').forEach(c=>c.classList.remove('selected'));
-  // re-render to show selection
+
+  // Re-render cards with selection highlighted
   renderDurCards(ds);
-  // re-select visually
-  document.querySelectorAll('.dur-card').forEach(card=>{
-    if(card.querySelector('.dur-title')&&card.querySelector('.dur-title').textContent===
-      {manha:'Somente manhã',tarde:'Somente tarde',dia:'Dia inteiro','2dias':'2 dias inteiros'}[d])
+  // Mark selected card
+  document.querySelectorAll('.dur-card:not(.dur-disabled)').forEach(card=>{
+    const title=card.querySelector('.dur-title');
+    if(title&&title.textContent==={manha:'Somente manhã',tarde:'Somente tarde',dia:'Dia inteiro','2dias':'2 dias inteiros'}[d])
       card.classList.add('selected');
   });
   document.getElementById('btn-dur').disabled=false;
@@ -456,7 +483,8 @@ window.selectDur = function(d, ds){
 
 function buildSelText(){
   const dl={manha:'Manhã · 09h às 11h30',tarde:'Tarde · 13h30 às 17h',dia:'Dia inteiro · 09h às 17h','2dias':'2 dias inteiros · 09h às 17h'};
-  if(dur==='2dias') return fmtLong(selDates[0])+' e '+fmtLong(selDates[1])+' · '+dl[dur];
+  if(dur==='2dias'&&selDates.length===2)
+    return fmtLong(selDates[0])+' e '+fmtLong(selDates[1])+' · '+dl[dur];
   return fmtLong(selDates[0])+' · '+dl[dur];
 }
 
