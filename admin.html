@@ -15,7 +15,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;}
-header{background:#5C3317;padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;min-height:88px;}
+header{background:#5C3317;padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;min-height:88px;position:relative;}
 .header-left{display:flex;align-items:center;gap:1rem;}
 
 .admin-badge{background:rgba(196,137,74,.3);border:0.5px solid var(--caramel);border-radius:20px;padding:4px 12px;font-size:12px;color:var(--caramel);}
@@ -30,6 +30,7 @@ header{background:#5C3317;padding:1.25rem 2rem;display:flex;align-items:center;j
 .filter-btn:hover{background:var(--warm);}
 .filter-btn.active{background:var(--chocolate);color:white;border-color:var(--chocolate);}
 .filter-sep{width:1px;height:24px;background:var(--border);}
+#month-filter{font-family:'DM Sans',sans-serif;color:var(--text-muted);background:white;border:0.5px solid var(--border-strong);border-radius:20px;outline:none;}
 .table-wrap{background:white;border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
 .table-head{display:grid;grid-template-columns:1.6fr 1fr 1fr 0.8fr 0.8fr 1.2fr;padding:12px 1.25rem;background:var(--warm);border-bottom:0.5px solid var(--border);font-size:11px;font-weight:500;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;}
 .booking-row{display:grid;grid-template-columns:1.6fr 1fr 1fr 0.8fr 0.8fr 1.2fr;padding:14px 1.25rem;border-bottom:0.5px solid var(--border);align-items:center;transition:background .1s;}
@@ -164,10 +165,12 @@ header{background:#5C3317;padding:1.25rem 2rem;display:flex;align-items:center;j
 </div>
 
 <header>
-  <div class="header-left" style="display:flex;align-items:center;justify-content:center;">
+  <!-- Logo absolutely centered -->
+  <div style="position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;">
     <img src="logo.png" alt="Maria Chocolate" style="height:62px;max-width:200px;object-fit:contain;" />
   </div>
-  <div style="display:flex;align-items:center;gap:12px;">
+  <!-- Right side buttons -->
+  <div style="margin-left:auto;display:flex;align-items:center;gap:12px;position:relative;z-index:1;">
     <span style="font-size:11px;color:rgba(255,255,255,0.55);letter-spacing:.1em;text-transform:uppercase;">Painel Administrativo</span>
     <div class="admin-badge">Admin</div>
     <button class="logout-btn" onclick="logout()">Sair</button>
@@ -183,15 +186,19 @@ header{background:#5C3317;padding:1.25rem 2rem;display:flex;align-items:center;j
 
 
   <div class="filters">
-    <button class="filter-btn" onclick="setFilter('historico',this)">Histórico</button>
     <button class="filter-btn active" onclick="setFilter('pendente',this)">Pendentes</button>
     <button class="filter-btn" onclick="setFilter('aprovado',this)">Aprovados</button>
     <button class="filter-btn" onclick="setFilter('reprovado',this)">Reprovados</button>
+    <button class="filter-btn" onclick="setFilter('historico',this)">Histórico</button>
     <div class="filter-sep"></div>
     <button class="filter-btn" onclick="setFilter('Chocolateria',this)">🍫 Chocolateria</button>
     <button class="filter-btn" onclick="setFilter('Confeitaria',this)">🎂 Confeitaria</button>
     <button class="filter-btn" onclick="setFilter('Salgados',this)">🥐 Salgados</button>
     <button class="filter-btn" onclick="setFilter('Fornecedor',this)">🏪 Fornecedor</button>
+    <div class="filter-sep"></div>
+    <select id="month-filter" class="filter-btn" onchange="setMonthFilter(this.value)" style="cursor:pointer;padding-right:8px;">
+      <option value="">Todos os meses</option>
+    </select>
   </div>
 
   <div class="table-wrap">
@@ -327,7 +334,7 @@ window.loadData = async function(){
     allBookings   = snapA.docs.map(d=>({id:d.id,...d.data()}));
     blockedDates  = snapB.docs.map(d=>({id:d.id,...d.data()}));
     releasedDates = snapC.docs.map(d=>({id:d.id,...d.data()}));
-    renderList(); renderAdminCal(); renderBlockedList(); renderReleasedList();
+    renderList(); renderAdminCal(); renderBlockedList(); renderReleasedList(); populateMonthFilter();
   } catch(e){ console.error(e); alert('Erro ao carregar dados: '+e.message); }
 }
 
@@ -407,11 +414,33 @@ function durLabel(d){ return {manha:'Somente manhã',tarde:'Somente tarde',dia:'
 
 
 
+let currentMonth = ''; // 'YYYY-MM' or ''
+
 window.setFilter = function(f, btn){
   currentFilter=f;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  document.querySelectorAll('.filter-btn:not(select)').forEach(b=>b.classList.remove('active'));
+  if(btn.tagName !== 'SELECT') btn.classList.add('active');
   renderList();
+}
+
+window.setMonthFilter = function(val){
+  currentMonth=val;
+  renderList();
+}
+
+function populateMonthFilter(){
+  // Build list of months from bookings
+  const months = [...new Set(allBookings.map(b=>{
+    const[y,m]=b.data.split('-'); return y+'-'+m;
+  }))].sort().reverse();
+  const sel=document.getElementById('month-filter');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Todos os meses</option>';
+  months.forEach(ym=>{
+    const[y,m]=ym.split('-');
+    const label=MONTHS_PT[parseInt(m)-1]+' '+y;
+    sel.innerHTML+=`<option value="${ym}" ${ym===cur?'selected':''}>${label}</option>`;
+  });
 }
 
 function renderList(){
@@ -421,6 +450,10 @@ function renderList(){
   if(currentFilter==='historico') filtered=allBookings;
   else if(statuses.includes(currentFilter)) filtered=allBookings.filter(b=>b.status===currentFilter);
   else if(cats.includes(currentFilter)) filtered=allBookings.filter(b=>b.categoria===currentFilter);
+  // Apply month filter
+  if(currentMonth){
+    filtered=filtered.filter(b=>b.data.startsWith(currentMonth));
+  }
   filtered=[...filtered].sort((a,b)=>a.data.localeCompare(b.data));
   const container=document.getElementById('bookings-list');
   if(!filtered.length){ container.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Nenhuma solicitação</div></div>`; return; }
