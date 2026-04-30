@@ -308,15 +308,19 @@ let allBookings=[];
 // ── FIRESTORE ──────────────────────────────────────────────────────────
 let blockedDates=[];
 function getBlockedDates(){ return blockedDates; }
+let releasedDates=[];
+function getReleasedDates(){ return releasedDates; }
 
 async function loadBookings(){
   try {
-    const [snapA, snapB] = await Promise.all([
+    const [snapA, snapB, snapC] = await Promise.all([
       getDocs(collection(db,'agendamentos')),
-      getDocs(collection(db,'datas_bloqueadas'))
+      getDocs(collection(db,'datas_bloqueadas')),
+      getDocs(collection(db,'datas_liberadas'))
     ]);
-    allBookings  = snapA.docs.map(d=>({id:d.id,...d.data()}));
-    blockedDates = snapB.docs.map(d=>({id:d.id,...d.data()}));
+    allBookings   = snapA.docs.map(d=>({id:d.id,...d.data()}));
+    blockedDates  = snapB.docs.map(d=>({id:d.id,...d.data()}));
+    releasedDates = snapC.docs.map(d=>({id:d.id,...d.data()}));
   } catch(e){ console.error('Erro ao carregar dados',e); }
 }
 
@@ -403,7 +407,8 @@ function renderCal(){
   for(let i=0;i<first;i++) html+=`<div class="cal-day empty"></div>`;
   for(let d=1;d<=days;d++){
     const ds=toDS(y,m+1,d);
-    const isPast=new Date(y,m,d)<minDate;
+    const isReleased=getReleasedDates().some(r=>r.date===ds);
+    const isPast=new Date(y,m,d)<minDate && !isReleased;
     const clickable=!isPast&&isDayClickable(ds);
     const{am,pm,full}=getDayOccupancy(ds);
     const{hasPending,hasApproved,amBooked,pmBooked,fullBooked}=getDayStatus(ds);

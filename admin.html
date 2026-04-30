@@ -97,6 +97,11 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 .blocked-tag{display:flex;align-items:center;gap:6px;background:var(--red-bg);border:0.5px solid var(--red);border-radius:20px;padding:4px 12px;font-size:13px;color:var(--red);}
 .blocked-tag button{background:none;border:none;cursor:pointer;color:var(--red);font-size:14px;line-height:1;padding:0;}
 .mini-day.admin-blocked{background:#FDECEA;border:1.5px solid #EF9A9A;}
+/* LIBERAR DATAS */
+.release-tag{display:flex;align-items:center;gap:6px;background:#E8F5E9;border:0.5px solid #81C784;border-radius:20px;padding:4px 12px;font-size:13px;color:#2E7D32;}
+.release-tag button{background:none;border:none;cursor:pointer;color:#2E7D32;font-size:14px;line-height:1;padding:0;}
+.block-add-btn.release{background:var(--green);}
+.block-add-btn.release:hover{background:#1B5E20;}
 /* CALENDAR VIEW */
 .cal-view-wrap{margin-top:2.5rem;}
 .cal-view-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--chocolate);margin-bottom:1rem;}
@@ -222,6 +227,24 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
     <div class="blocked-list" id="blocked-list"></div>
   </div>
 
+  <!-- LIBERAR DATAS DENTRO DO PRAZO -->
+  <div class="block-panel" style="border-color:#81C784">
+    <div class="block-title" style="color:#2E7D32">Liberar datas antecipadas</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem">Libere datas dentro do prazo de 20 dias para agendamento excepcional de instrutores.</p>
+    <div class="block-form">
+      <div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Data a liberar</div>
+        <input type="date" class="block-input" id="release-date" />
+      </div>
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Motivo (opcional)</div>
+        <input type="text" class="block-input" id="release-reason" placeholder="Ex: Curso urgente" style="width:100%" />
+      </div>
+      <button class="block-add-btn release" onclick="addReleasedDate()">Liberar data</button>
+    </div>
+    <div class="blocked-list" id="released-list"></div>
+  </div>
+
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
   <div class="modal" id="modal-body"></div>
 </div>
@@ -282,13 +305,15 @@ window.logout = function(){
 // ── DATA ───────────────────────────────────────────────────────────────
 window.loadData = async function(){
   try {
-    const [snapA, snapB] = await Promise.all([
+    const [snapA, snapB, snapC] = await Promise.all([
       getDocs(collection(db,'agendamentos')),
-      getDocs(collection(db,'datas_bloqueadas'))
+      getDocs(collection(db,'datas_bloqueadas')),
+      getDocs(collection(db,'datas_liberadas'))
     ]);
-    allBookings  = snapA.docs.map(d=>({id:d.id,...d.data()}));
-    blockedDates = snapB.docs.map(d=>({id:d.id,...d.data()}));
-    renderList(); renderAdminCal(); renderBlockedList();
+    allBookings   = snapA.docs.map(d=>({id:d.id,...d.data()}));
+    blockedDates  = snapB.docs.map(d=>({id:d.id,...d.data()}));
+    releasedDates = snapC.docs.map(d=>({id:d.id,...d.data()}));
+    renderList(); renderAdminCal(); renderBlockedList(); renderReleasedList();
   } catch(e){ console.error(e); alert('Erro ao carregar dados: '+e.message); }
 }
 
@@ -551,6 +576,50 @@ function renderBlockedList(){
   el.innerHTML=sorted.map(b=>
     `<div class="blocked-tag">🚫 ${b.label}${b.reason?' — '+b.reason:''}
     <button onclick="removeBlockedDate('${b.id}')" title="Remover bloqueio">✕</button></div>`
+  ).join('');
+}
+
+// ── RELEASED DATES (Firestore) ────────────────────────────────────────
+let releasedDates=[];
+function getReleasedDates(){ return releasedDates; }
+
+window.addReleasedDate = async function(){
+  const dateEl=document.getElementById('release-date');
+  const reasonEl=document.getElementById('release-reason');
+  const ds=dateEl.value;
+  if(!ds){ dateEl.focus(); return; }
+  // Validate: date must be within the 20-day window
+  const today=new Date(); today.setHours(0,0,0,0);
+  const minDate=new Date(today); minDate.setDate(minDate.getDate()+20);
+  const chosen=new Date(ds);
+  if(chosen>=minDate){ alert('Esta data já está disponível normalmente (fora do prazo de 20 dias).'); return; }
+  if(chosen<today){ alert('Não é possível liberar datas no passado.'); return; }
+  if(releasedDates.find(b=>b.date===ds)){ alert('Esta data já está liberada.'); return; }
+  const[y,m,d]=ds.split('-');
+  const entry={date:ds, reason:reasonEl.value.trim(), label:d+'/'+m+'/'+y};
+  try {
+    const docRef=await addDoc(collection(db,'datas_liberadas'), entry);
+    releasedDates.push({id:docRef.id,...entry});
+    dateEl.value=''; reasonEl.value='';
+    renderReleasedList();
+  } catch(e){ alert('Erro ao liberar data: '+e.message); }
+}
+
+window.removeReleasedDate = async function(id){
+  try {
+    await deleteDoc(doc(db,'datas_liberadas',id));
+    releasedDates=releasedDates.filter(b=>b.id!==id);
+    renderReleasedList();
+  } catch(e){ alert('Erro ao remover liberação: '+e.message); }
+}
+
+function renderReleasedList(){
+  const sorted=[...releasedDates].sort((a,b)=>a.date.localeCompare(b.date));
+  const el=document.getElementById('released-list');
+  if(!sorted.length){ el.innerHTML='<span style="font-size:13px;color:var(--text-muted)">Nenhuma data liberada antecipadamente.</span>'; return; }
+  el.innerHTML=sorted.map(b=>
+    `<div class="release-tag">✅ ${b.label}${b.reason?' — '+b.reason:''}
+    <button onclick="removeReleasedDate('${b.id}')" title="Remover liberação">✕</button></div>`
   ).join('');
 }
 
