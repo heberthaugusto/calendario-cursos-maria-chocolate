@@ -340,10 +340,10 @@ async function uploadPhoto(file){
 
 // ── HELPERS ───────────────────────────────────────────────────────────
 function toDS(y,m,d){ return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
-function addDays(ds,n){ const d=new Date(ds); d.setDate(d.getDate()+n); return toDS(d.getFullYear(),d.getMonth()+1,d.getDate()); }
+function addDays(ds,n){ const[y,m,d]=ds.split('-').map(Number); const dt=new Date(y,m-1,d+n); return toDS(dt.getFullYear(),dt.getMonth()+1,dt.getDate()); }
 function fmtShort(ds){ const[y,m,d]=ds.split('-'); return `${d}/${m}/${y}`; }
-function fmtLong(ds){ const[y,m,d]=ds.split('-'); const dt=new Date(y,m-1,d); return `${WD[dt.getDay()]}, ${d} de ${MONTHS_PT[m-1]} de ${y}`; }
-function getWeekday(ds){ const[y,m,d]=ds.split('-'); return new Date(y,m-1,d).getDay(); }
+function fmtLong(ds){ const[y,m,d]=ds.split('-').map(Number); const dt=new Date(y,m-1,d); return `${WD[dt.getDay()]}, ${d} de ${MONTHS_PT[m-1]} de ${y}`; }
+function getWeekday(ds){ const[y,m,d]=ds.split('-').map(Number); return new Date(y,m-1,d).getDay(); }
 
 function getDayOccupancy(ds){
   // Only count non-reprovado bookings for blocking
