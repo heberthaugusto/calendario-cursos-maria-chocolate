@@ -105,28 +105,35 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
 /* CALENDAR VIEW */
 .cal-view-wrap{margin-top:2.5rem;}
 .cal-view-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--chocolate);margin-bottom:1rem;}
-.mini-cal{background:white;border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
-.mini-cal-head{background:var(--chocolate);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;}
-.mini-cal-label{font-family:'Cormorant Garamond',serif;font-size:18px;color:white;}
-.mini-nav{background:rgba(255,255,255,.1);border:0.5px solid rgba(255,255,255,.2);border-radius:var(--radius-sm);width:28px;height:28px;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.mini-nav:hover{background:rgba(255,255,255,.2);}
-.mini-body{padding:1rem;}
-.mini-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-.mini-wl{text-align:center;font-size:10px;color:var(--text-muted);padding:3px 0;font-weight:500;text-transform:uppercase;}
-.mini-day{aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;gap:2px;}
-.mini-day.past-day{color:var(--border-strong);}
-.mini-dot{width:4px;height:4px;border-radius:50%;}
-/* Same status colors as instructor calendar */
-.mini-day.am-pending                { background:linear-gradient(to bottom,#FFF3E0 50%,white 50%);         border:1.5px solid #FFB74D; }
-.mini-day.am-approved               { background:linear-gradient(to bottom,#E8F5E9 50%,white 50%);         border:1.5px solid #81C784; }
-.mini-day.pm-pending                { background:linear-gradient(to bottom,white 50%,#FFF3E0 50%);         border:1.5px solid #FFB74D; }
-.mini-day.pm-approved               { background:linear-gradient(to bottom,white 50%,#E8F5E9 50%);         border:1.5px solid #81C784; }
-.mini-day.am-pending.pm-pending     { background:#FFF3E0;                                                   border:1.5px solid #FFB74D; }
-.mini-day.am-approved.pm-approved   { background:#E8F5E9;                                                   border:1.5px solid #81C784; }
-.mini-day.am-approved.pm-pending    { background:linear-gradient(to bottom,#E8F5E9 50%,#FFF3E0 50%);       border:1.5px solid #A5D6A7; }
-.mini-day.am-pending.pm-approved    { background:linear-gradient(to bottom,#FFF3E0 50%,#E8F5E9 50%);       border:1.5px solid #A5D6A7; }
-.mini-day.full-pending              { background:#FFF3E0;                                                   border:1.5px solid #FFB74D; }
-.mini-day.full-approved             { background:#E8F5E9;                                                   border:1.5px solid #81C784; }
+/* ADMIN CALENDAR - identical to instructor calendar */
+.admin-cal-wrap .cal-card{background:white;border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.admin-cal-wrap .cal-head{background:var(--chocolate);padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
+.admin-cal-wrap .cal-month-label{font-family:'Cormorant Garamond',serif;font-size:22px;color:white;}
+.admin-cal-wrap .cal-nav-btn{background:rgba(255,255,255,.1);border:0.5px solid rgba(255,255,255,.2);border-radius:var(--radius-sm);width:34px;height:34px;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.admin-cal-wrap .cal-nav-btn:hover{background:rgba(255,255,255,.25);}
+.admin-cal-wrap .cal-body{padding:1.25rem 1.5rem 1rem;}
+.admin-cal-wrap .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:6px;}
+.admin-cal-wrap .cal-weekday{text-align:center;font-size:11px;font-weight:500;color:var(--text-muted);letter-spacing:.05em;text-transform:uppercase;padding:4px 0;}
+.admin-cal-wrap .cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.admin-cal-wrap .cal-day{min-height:58px;border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;padding:6px 3px 4px;cursor:default;border:0.5px solid transparent;transition:all .15s;overflow:hidden;}
+.admin-cal-wrap .cal-day.empty{cursor:default;}
+.admin-cal-wrap .cal-day.past{opacity:.35;}
+.admin-cal-wrap .cal-day.blocked-day{background:var(--warm);}
+.admin-cal-wrap .cal-day.admin-blocked{background:#FDECEA;border:1.5px solid #EF9A9A;}
+.admin-cal-wrap .cal-day.admin-blocked .day-num{color:#C62828;}
+.admin-cal-wrap .cal-day.has-pending{background:#FFF3E0;border:1.5px solid #FFB74D;}
+.admin-cal-wrap .cal-day.has-approved{background:#E8F5E9;border:1.5px solid #81C784;}
+.admin-cal-wrap .cal-day.has-pending.has-approved{background:#FFF3E0;border:1.5px solid #FFB74D;}
+.admin-cal-wrap .day-num{font-size:13px;line-height:1;color:var(--text);}
+.admin-cal-wrap .cal-day.past .day-num{color:var(--text-muted);}
+.admin-cal-wrap .day-avail{width:100%;display:flex;flex-direction:column;gap:1px;margin-top:2px;}
+.admin-cal-wrap .avail-label{font-size:9px;font-weight:500;text-align:center;border-radius:3px;padding:1px 2px;line-height:1.3;}
+.admin-cal-wrap .avail-manha{background:rgba(255,255,255,0.7);color:#2E7D32;}
+.admin-cal-wrap .avail-tarde{background:rgba(255,255,255,0.7);color:#1565C0;}
+.admin-cal-wrap .cal-legend{display:flex;gap:10px;flex-wrap:wrap;padding:.875rem 1.5rem;border-top:0.5px solid var(--border);background:var(--cream);}
+.admin-cal-wrap .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);}
+.admin-cal-wrap .legend-swatch{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+/* events list */
 .mini-events-list{padding:0 1rem 1rem;display:flex;flex-direction:column;gap:6px;}
 .mini-event{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius-sm);background:var(--cream);border:0.5px solid var(--border);font-size:13px;flex-wrap:wrap;}
 .me-time{font-weight:500;min-width:42px;color:var(--chocolate);}
@@ -197,17 +204,27 @@ header{background:var(--chocolate);padding:1.25rem 2rem;display:flex;align-items
     <div id="bookings-list"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Carregando...</div></div></div>
   </div>
 
-  <div class="cal-view-wrap">
+  <div class="cal-view-wrap admin-cal-wrap">
     <div class="cal-view-title">Visão do calendário</div>
-    <div class="mini-cal">
-      <div class="mini-cal-head">
-        <button class="mini-nav" onclick="changeAdminMonth(-1)">&#8249;</button>
-        <span class="mini-cal-label" id="admin-cal-label"></span>
-        <button class="mini-nav" onclick="changeAdminMonth(1)">&#8250;</button>
+    <div class="cal-card">
+      <div class="cal-head">
+        <button class="cal-nav-btn" onclick="changeAdminMonth(-1)">&#8249;</button>
+        <span class="cal-month-label" id="admin-cal-label"></span>
+        <button class="cal-nav-btn" onclick="changeAdminMonth(1)">&#8250;</button>
       </div>
-      <div class="mini-body"><div class="mini-grid" id="admin-cal-grid"></div></div>
-      <div class="mini-events-list" id="admin-events-list"></div>
+      <div class="cal-body">
+        <div class="cal-weekdays" id="admin-cal-weekdays"></div>
+        <div class="cal-days" id="admin-cal-grid"></div>
+      </div>
+      <div class="cal-legend">
+        <div class="legend-item"><div class="legend-swatch" style="background:#FFF3E0;border:1.5px solid #FFB74D"></div> Reservado — pendente</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#E8F5E9;border:1.5px solid #81C784"></div> Confirmado</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#FDECEA;border:1.5px solid #EF9A9A"></div> Data bloqueada</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--warm);border:0.5px solid var(--border-strong)"></div> Indisponível</div>
+        <div class="legend-item" style="font-size:10px;color:var(--text-muted)">Texto <span style="color:#2E7D32;font-weight:500">manhã</span> / <span style="color:#1565C0;font-weight:500">tarde</span> = período livre</div>
+      </div>
     </div>
+    <div class="mini-events-list" id="admin-events-list" style="margin-top:1rem;padding:0"></div>
   </div>
   <!-- BLOCKED DATES PANEL -->
   <div class="block-panel">
@@ -474,39 +491,69 @@ window.showDetail = function(id){
 
 window.closeModal = function(e){ if(!e||e.target===document.getElementById('modal')) document.getElementById('modal').classList.remove('open'); }
 
-// ── MINI CALENDAR ──────────────────────────────────────────────────────
+// ── ADMIN CALENDAR ─────────────────────────────────────────────────────
+function toDS(y,m,d){ return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+function getAdminDayOccupancy(ds){
+  const bs=allBookings.filter(b=>b.status!=='reprovado'&&(b.data===ds||(b.data2&&b.data2===ds)));
+  let am=false,pm=false,full=false;
+  bs.forEach(b=>{ if(b.duracao==='dia'||b.duracao==='2dias') full=true; else if(b.duracao==='manha') am=true; else if(b.duracao==='tarde') pm=true; });
+  return {am,pm,full};
+}
+
+function getAdminDayStatus(ds){
+  const bs=allBookings.filter(b=>b.status!=='reprovado'&&(b.data===ds||(b.data2&&b.data2===ds)));
+  let hasPending=false,hasApproved=false,amBooked=false,pmBooked=false,fullBooked=false;
+  bs.forEach(b=>{
+    if(b.status==='pendente') hasPending=true;
+    else if(b.status==='aprovado') hasApproved=true;
+    if(b.duracao==='manha') amBooked=true;
+    else if(b.duracao==='tarde') pmBooked=true;
+    else if(b.duracao==='dia'||b.duracao==='2dias') fullBooked=true;
+  });
+  return {hasPending,hasApproved,amBooked,pmBooked,fullBooked};
+}
+
 function renderAdminCal(){
   const y=adminCur.getFullYear(),m=adminCur.getMonth();
   document.getElementById('admin-cal-label').textContent=MONTHS_PT[m]+' '+y;
-  const grid=document.getElementById('admin-cal-grid');
-  grid.innerHTML=WD.map(d=>`<div class="mini-wl">${d.charAt(0)}</div>`).join('');
+  // weekday headers (full names like instructor)
+  document.getElementById('admin-cal-weekdays').innerHTML=WD.map(w=>`<div class="cal-weekday">${w}</div>`).join('');
   const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
   const today=new Date(); today.setHours(0,0,0,0);
-  const active=allBookings.filter(b=>b.status!=='reprovado');
-  for(let i=0;i<first;i++) grid.innerHTML+=`<div class="mini-day"></div>`;
+  const grid=document.getElementById('admin-cal-grid');
+  let html='';
+  for(let i=0;i<first;i++) html+=`<div class="cal-day empty"></div>`;
   for(let d=1;d<=days;d++){
-    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const evs=active.filter(b=>b.data===ds||(b.data2&&b.data2===ds));
+    const ds=toDS(y,m+1,d);
     const isPast=new Date(y,m,d)<today;
-    // Compute status classes same as instructor calendar
-    let amStatus=null, pmStatus=null, fullStatus=null;
-    evs.forEach(b=>{
-      const st=b.status==='aprovado'?'approved':'pending';
-      if(b.duracao==='manha') amStatus=st;
-      else if(b.duracao==='tarde') pmStatus=st;
-      else fullStatus=st;
-    });
-    const isBlocked=getBlockedDates().some(b=>b.date===ds);
-    let cls='mini-day'+(isPast?' past-day':'')+(isBlocked?' admin-blocked':'');
-    if(!isPast){
-      if(fullStatus)  cls+=` full-${fullStatus}`;
-      else {
-        if(amStatus) cls+=` am-${amStatus}`;
-        if(pmStatus) cls+=` pm-${pmStatus}`;
-      }
+    const isAdminBlocked=getBlockedDates().some(b=>b.date===ds);
+    const{am,pm,full}=getAdminDayOccupancy(ds);
+    const{hasPending,hasApproved,amBooked,pmBooked,fullBooked}=getAdminDayStatus(ds);
+    let cls='cal-day';
+    if(isPast) cls+=' past';
+    else if(isAdminBlocked) cls+=' admin-blocked';
+    else if(full||(am&&pm)) cls+=' blocked-day';
+    // status colors
+    if(!isPast && !isAdminBlocked){
+      if(hasPending)       cls+=' has-pending';
+      else if(hasApproved) cls+=' has-approved';
     }
-    grid.innerHTML+=`<div class="${cls}"><span>${d}</span></div>`;
+    // availability labels
+    let availHtml='';
+    if(!isPast && !isAdminBlocked && (amBooked||pmBooked) && !fullBooked && !(amBooked&&pmBooked)){
+      availHtml='<div class="day-avail">';
+      availHtml+=!amBooked?'<div class="avail-label avail-manha">manhã</div>':'<div style="height:12px"></div>';
+      availHtml+=!pmBooked?'<div class="avail-label avail-tarde">tarde</div>':'';
+      availHtml+='</div>';
+    }
+    const blockedEntry=getBlockedDates().find(b=>b.date===ds);
+    const title=blockedEntry?(blockedEntry.reason||'Data bloqueada'):'';
+    html+=`<div class="${cls}" ${title?`title="${title}"`:''}><div class="day-num">${d}</div>${availHtml}</div>`;
   }
+  grid.innerHTML=html;
+  // events list below calendar
+  const active=allBookings.filter(b=>b.status!=='reprovado');
   const evsList=document.getElementById('admin-events-list');
   const monthEvs=active.filter(b=>{ const[by,bm]=b.data.split('-'); return parseInt(by)===y&&parseInt(bm)-1===m; }).sort((a,b)=>a.data.localeCompare(b.data)||a.horaInicio.localeCompare(b.horaInicio));
   evsList.innerHTML=monthEvs.map(b=>`

@@ -462,7 +462,7 @@ function renderDurCards(ds){
     {id:'manha', icon:'🌅', title:'Somente manhã',    desc:'Das <strong>09h às 11h30</strong>',        rule:'Seg a Sáb'},
     {id:'tarde', icon:'🌆', title:'Somente tarde',    desc:'Das <strong>13h30 às 17h</strong>',         rule:'Seg a Sex'},
     {id:'dia',   icon:'☀️', title:'Dia inteiro',       desc:'Das <strong>09h às 17h</strong>',           rule:'Seg a Sex'},
-    {id:'2dias', icon:'📅', title:'2 dias inteiros',  desc:`Das <strong>09h às 17h</strong> · 2 dias consecutivos<br>Reserva também: <strong>${fmtShort(addDays(ds,1))}</strong>`,  rule:'1º dia: Seg a Qui'},
+    {id:'2dias', icon:'📅', title:'2 dias inteiros',  desc:`Das <strong>09h às 17h</strong> — 2 dias consecutivos<br>Reserva: <strong>${fmtShort(ds)}</strong> e <strong>${fmtShort(addDays(ds,1))}</strong>`,  rule:'1º dia: Seg a Qui'},
   ];
   const grid=document.getElementById('dur-grid');
   grid.innerHTML=periods.map(p=>{
@@ -495,7 +495,7 @@ window.selectDur = function(d, ds){
     selDates=[ds, next];
     // Update date bar to show both days
     document.getElementById('dur-date-display').textContent=
-      fmtLong(ds)+' e '+fmtLong(next);
+      fmtLong(ds)+' e '+fmtLong(next)+' · 2 dias inteiros · 09h às 17h';
   } else {
     selDates=[ds];
     document.getElementById('dur-date-display').textContent=fmtLong(ds);
@@ -516,6 +516,15 @@ window.selectDur = function(d, ds){
 }
 
 function buildSelText(){
+  // Used in date bar on form step
+  if(dur==='2dias'&&selDates.length===2)
+    return fmtLong(selDates[0])+' e '+fmtLong(selDates[1]);
+  const horarios={manha:'09h às 11h30',tarde:'13h30 às 17h',dia:'09h às 17h'};
+  return fmtLong(selDates[0])+' · '+horarios[dur];
+}
+
+function buildSelTextFull(){
+  // Used in summary bar on calendar step
   const dl={manha:'Manhã · 09h às 11h30',tarde:'Tarde · 13h30 às 17h',dia:'Dia inteiro · 09h às 17h','2dias':'2 dias inteiros · 09h às 17h'};
   if(dur==='2dias'&&selDates.length===2)
     return fmtLong(selDates[0])+' e '+fmtLong(selDates[1])+' · '+dl[dur];
