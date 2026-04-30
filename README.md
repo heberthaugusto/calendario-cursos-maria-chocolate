@@ -1,4 +1,4 @@
-# 🍫 Calendário de Cursos — Maria Chocolate
+# Calendário de Cursos — Maria Chocolate
 
 > Sistema de agendamento de cursos para instrutores, com painel administrativo de aprovação, notificações por e-mail e armazenamento em nuvem.
 
