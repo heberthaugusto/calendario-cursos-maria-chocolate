@@ -189,12 +189,12 @@ header{background:#5C3317;padding:1.25rem 2rem;display:flex;align-items:center;j
     <button class="filter-btn active" onclick="setFilter('pendente',this)">Pendentes</button>
     <button class="filter-btn" onclick="setFilter('aprovado',this)">Aprovados</button>
     <button class="filter-btn" onclick="setFilter('reprovado',this)">Reprovados</button>
-    <button class="filter-btn" onclick="setFilter('historico',this)">Histórico</button>
+    <button class="filter-btn" onclick="setFilter('historico',this)">Todos</button>
     <div class="filter-sep"></div>
-    <button class="filter-btn" onclick="setFilter('Chocolateria',this)">🍫 Chocolateria</button>
-    <button class="filter-btn" onclick="setFilter('Confeitaria',this)">🎂 Confeitaria</button>
-    <button class="filter-btn" onclick="setFilter('Salgados',this)">🥐 Salgados</button>
-    <button class="filter-btn" onclick="setFilter('Fornecedor',this)">🏪 Fornecedor</button>
+    <button class="filter-btn" onclick="setFilter('Chocolateria',this)">🍫</button>
+    <button class="filter-btn" onclick="setFilter('Confeitaria',this)">🎂</button>
+    <button class="filter-btn" onclick="setFilter('Salgados',this)">🥐</button>
+    <button class="filter-btn" onclick="setFilter('Fornecedor',this)">🏪</button>
     <div class="filter-sep"></div>
     <select id="month-filter" class="filter-btn" onchange="setMonthFilter(this.value)" style="cursor:pointer;padding-right:8px;">
       <option value="">Todos os meses</option>
@@ -429,13 +429,13 @@ window.setMonthFilter = function(val){
 }
 
 function populateMonthFilter(){
-  // Build list of months from bookings
+  // Build list of months from bookings, newest first
   const months = [...new Set(allBookings.map(b=>{
     const[y,m]=b.data.split('-'); return y+'-'+m;
   }))].sort().reverse();
   const sel=document.getElementById('month-filter');
   const cur=sel.value;
-  sel.innerHTML='<option value="">Todos os meses</option>';
+  sel.innerHTML='<option value="">📅 Mês</option>';
   months.forEach(ym=>{
     const[y,m]=ym.split('-');
     const label=MONTHS_PT[parseInt(m)-1]+' '+y;
