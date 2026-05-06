@@ -10,6 +10,17 @@
 
 ---
 
+## 🌐 Demo ao Vivo
+
+| Portal | Link |
+|---|---|
+| 🗓️ Portal do Instrutor | [instrutores.html](https://heberthaugusto.github.io/portfolio-calendario-agendamento-cursos/instrutores.html) |
+| 🔧 Painel Administrativo | [admin.html](https://heberthaugusto.github.io/portfolio-calendario-agendamento-cursos/admin.html) |
+
+> ℹ️ O painel administrativo requer credenciais de acesso — configure suas próprias via Firebase Authentication para testar.
+
+---
+
 ## 🎯 Sobre o Projeto
 
 Este sistema foi desenvolvido do zero para resolver um problema real: a escola **Maria Chocolate** precisava de uma forma organizada para que seus instrutores parceiros agendassem datas para ministrar cursos — sem depender de planilhas, WhatsApp ou agendamento manual.
