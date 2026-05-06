@@ -719,6 +719,10 @@ window.resetAll       = resetAll;
 
 // Init
 await loadBookings();
+// Recalculate first available month after data loads
+const _today2=new Date(); _today2.setHours(0,0,0,0);
+const _min2=new Date(_today2); _min2.setDate(_min2.getDate()+20);
+calCur=new Date(_min2.getFullYear(),_min2.getMonth(),1);
 renderCal();
 </script>
 </body>
