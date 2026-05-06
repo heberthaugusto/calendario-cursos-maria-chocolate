@@ -1,52 +1,156 @@
-# Calendário de Cursos — Maria Chocolate
+# 🍫 Sistema de Agendamento de Cursos — Maria Chocolate
 
-> Sistema de agendamento de cursos para instrutores, com painel administrativo de aprovação, notificações por e-mail e armazenamento em nuvem.
+> Aplicação web completa desenvolvida para gerenciar o agendamento de cursos presenciais ministrados por instrutores parceiros da escola de gastronomia **Maria Chocolate**.
+
+[![HTML](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
+[![CSS](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat&logo=firebase&logoColor=black)](https://firebase.google.com)
+[![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=flat&logo=cloudinary&logoColor=white)](https://cloudinary.com)
 
 ---
 
-## 📋 Visão Geral
+## 🎯 Sobre o Projeto
 
-Este projeto é uma aplicação web completa para gerenciar o agendamento de datas de cursos ministrados por instrutores parceiros da **Maria Chocolate**. O sistema permite que instrutores solicitem datas diretamente pelo calendário, enquanto a equipe administrativa revisa, aprova ou reprova cada solicitação — tudo com notificações automáticas por e-mail.
+Este sistema foi desenvolvido do zero para resolver um problema real: a escola **Maria Chocolate** precisava de uma forma organizada para que seus instrutores parceiros agendassem datas para ministrar cursos — sem depender de planilhas, WhatsApp ou agendamento manual.
+
+O resultado foi uma aplicação com dois portais distintos: um **calendário interativo para os instrutores** e um **painel administrativo completo** para a equipe da escola.
 
 ---
 
-## ✨ Funcionalidades
+## ✨ Funcionalidades Implementadas
 
-### Portal do Instrutor (`instrutores.html`)
-- Calendário visual com disponibilidade em tempo real
-- Seleção de período: **manhã**, **tarde**, **dia inteiro** ou **2 dias consecutivos**
-- Regras automáticas por dia da semana (ex: tarde apenas seg–sex)
-- Prazo mínimo de **20 dias** para agendamento
-- Bloqueio visual de datas já reservadas com indicação de status:
-  - 🟠 Laranja — pendente de aprovação
-  - 🟢 Verde — confirmado
-  - 🔴 Vermelho — data bloqueada pelo admin
-- Upload de **2 a 5 fotos** de divulgação com validação de resolução mínima (1080×1080 px)
-- Descrição do curso com mínimo de 500 caracteres
-- Notificação automática por e-mail ao enviar solicitação
+### 🗓️ Portal do Instrutor
+- Calendário visual com disponibilidade em tempo real, sincronizado via Firebase
+- Fluxo guiado em 4 etapas: data → período → informações → confirmação
+- Regras de negócio automáticas:
+  - Prazo mínimo de 20 dias para agendamento
+  - Limite de 5 cursos por instrutor por mês
+  - Segundas-feiras de manhã bloqueadas (reservadas para lives)
+  - Dias da semana específicos por período (manhã, tarde, dia inteiro, 2 dias)
+- Indicação visual de status por cor: 🟠 pendente · 🟢 confirmado · 🔴 bloqueado
+- Upload de 2 a 5 fotos com validação de resolução mínima (1080×1080 px)
+- Validação de formulário completa com contador de caracteres (mín. 500)
+- Notificação automática por e-mail ao enviar
 
-### Painel Administrativo (`admin.html`)
-- Acesso protegido por senha
-- Listagem de solicitações com filtros por status e categoria
-- Filtro por mês para fácil navegação
+### 🔧 Painel Administrativo
+- Autenticação segura via **Firebase Authentication**
 - Aprovação e reprovação com e-mail automático para o instrutor
-- Cancelamento de aprovações com liberação imediata da data
-- Galeria de fotos por solicitação com download individual ou em lote
-- Calendário visual idêntico ao do instrutor para visão geral do mês
-- Bloqueio de datas específicas (feriados, eventos)
-- Liberação antecipada de datas dentro do prazo de 20 dias
+- Cancelamento de aprovações com liberação imediata da data no calendário
+- Filtros por status, categoria e mês
+- Exportação de planilha **CSV** com os cursos aprovados do mês
+- Galeria de fotos com download individual ou em lote
+- Bloqueio e liberação de datas específicas (feriados, eventos) — persistido no Firestore
+- Calendário visual idêntico ao do instrutor para visão geral
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🏗️ Arquitetura e Decisões Técnicas
 
-| Tecnologia | Uso |
+| Decisão | Justificativa |
 |---|---|
-| **HTML / CSS / JavaScript** | Interface completa sem frameworks |
-| **Firebase Firestore** | Banco de dados em tempo real |
-| **Cloudinary** | Armazenamento e entrega de imagens |
-| **EmailJS** | Envio de e-mails automáticos sem backend |
-| **GitHub Pages** | Hospedagem estática gratuita |
+| **Vanilla JS sem frameworks** | Projeto de escopo definido, sem necessidade de reatividade complexa. Menor bundle, mais rápido. |
+| **Firebase Firestore** | Banco de dados em tempo real sem necessidade de backend próprio. Gratuito para o volume de uso. |
+| **Firebase Authentication** | Solução segura para proteger o painel admin sem implementar backend de autenticação. |
+| **Cloudinary** | Upload direto do browser com URL pública para as fotos, sem servidor intermediário. |
+| **EmailJS** | Disparo de e-mails transacionais direto do frontend, sem backend. |
+| **GitHub Pages** | Hospedagem estática gratuita, ideal para aplicações sem servidor. |
+| **SHA-256 → Firebase Auth** | Migração da autenticação por hash local para autenticação real em nuvem, aumentando a segurança. |
+
+---
+
+## 🔐 Segurança Implementada
+
+- Regras do **Firestore** que garantem escrita restrita a usuários autenticados
+- **Firebase Authentication** com e-mail e senha para o painel admin
+- Restrição da API Key do Firebase ao domínio de produção
+- Upload preset **unsigned** do Cloudinary com pasta e tipo de arquivo restritos
+- Sem exposição de secrets no frontend — apenas chaves públicas necessárias
+
+---
+
+## 📐 Regras de Negócio
+
+```
+Manhã:           09h às 12h30  |  Terça a Sábado
+Tarde:           13h30 às 17h  |  Segunda a Sexta
+Dia inteiro:     09h às 17h    |  Segunda a Sexta
+2 dias seguidos: 09h às 17h    |  1º dia: Segunda a Quinta
+
+Prazo mínimo:    20 dias de antecedência
+Limite mensal:   5 cursos por instrutor
+Aprovação:       até 5 dias úteis
+Fotos:           2 a 5 · JPG ou PNG · mín. 1080×1080 px
+```
+
+---
+
+## 🛠️ Stack Tecnológica
+
+```
+Frontend:        HTML5 · CSS3 · JavaScript (ES Modules)
+Banco de dados:  Firebase Firestore
+Autenticação:    Firebase Authentication
+Storage:         Cloudinary
+E-mail:          EmailJS
+Hospedagem:      GitHub Pages
+```
+
+---
+
+## ⚙️ Como Rodar Localmente
+
+1. Clone o repositório:
+```bash
+git clone https://github.com/heberthaugusto/portfolio-calendario-agendamento-cursos.git
+```
+
+2. Configure suas credenciais nos arquivos HTML substituindo os placeholders:
+```javascript
+// instrutores.html e admin.html
+const firebaseConfig = {
+  apiKey: "SUA_FIREBASE_API_KEY",
+  authDomain: "SEU_PROJETO.firebaseapp.com",
+  projectId: "SEU_PROJETO_ID",
+  ...
+};
+const CLOUDINARY_CLOUD = 'SEU_CLOUDINARY_CLOUD_NAME';
+```
+
+3. Configure o Firebase:
+   - Ative o **Firestore** e crie as coleções: `agendamentos`, `datas_bloqueadas`, `datas_liberadas`
+   - Ative o **Authentication → E-mail/senha** e cadastre um usuário admin
+   - Aplique as regras de segurança do Firestore (ver seção abaixo)
+
+4. Configure o Cloudinary:
+   - Crie um upload preset `Unsigned` com pasta `maria-chocolate`
+
+5. Configure o EmailJS:
+   - Crie 2 templates e atualize os IDs nos arquivos HTML
+
+6. Abra `instrutores.html` no navegador ou publique via GitHub Pages
+
+### Regras do Firestore
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /agendamentos/{id} {
+      allow create: if true;
+      allow read: if true;
+      allow update, delete: if request.auth != null;
+    }
+    match /datas_bloqueadas/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /datas_liberadas/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
+```
 
 ---
 
@@ -54,123 +158,37 @@ Este projeto é uma aplicação web completa para gerenciar o agendamento de dat
 
 ```
 calendario-cursos-maria-chocolate/
-├── instrutores.html     # Portal de agendamento para instrutores
-├── admin.html           # Painel administrativo
-├── logo.png             # Logomarca Maria Chocolate
-└── README.md            # Este arquivo
+├── instrutores.html     Portal de agendamento para instrutores
+├── admin.html           Painel administrativo
+├── logo.png             Logomarca
+└── README.md            Este arquivo
 ```
 
 ---
 
-## ⚙️ Configuração e Deploy
+## 📸 Screenshots
 
-### Pré-requisitos
-- Conta no [Firebase](https://console.firebase.google.com)
-- Conta no [Cloudinary](https://cloudinary.com)
-- Conta no [EmailJS](https://emailjs.com)
-- Repositório no GitHub com GitHub Pages ativo
+### Calendário dos Instrutores
+![Calendário](print%201.png)
 
-### 1. Firebase (Firestore)
-1. Crie um projeto no Firebase Console
-2. Ative o **Firestore Database** na região `southamerica-east1`
-3. Crie as seguintes coleções:
-   - `agendamentos`
-   - `datas_bloqueadas`
-   - `datas_liberadas`
-4. Registre um app web e copie as credenciais para `instrutores.html` e `admin.html`
+### Seleção de Período
+![Período](print%202.png)
 
-### 2. Cloudinary
-1. Crie uma conta no Cloudinary
-2. Em **Settings → Upload**, crie um upload preset:
-   - **Nome:** `maria_chocolate_unsigned`
-   - **Signing mode:** `Unsigned`
-   - **Pasta:** `maria-chocolate`
-3. Atualize `CLOUDINARY_CLOUD` em `instrutores.html`
+### Painel Administrativo
+![Admin](print%203.png)
 
-### 3. EmailJS
-1. Crie uma conta no EmailJS e conecte seu Gmail
-2. Crie 2 templates:
-   - **Template 1** (`template_XXXXX`) — Notificação de nova solicitação para o admin
-   - **Template 2** (`template_XXXXX`) — Resultado (aprovação/reprovação) para o instrutor
-3. Atualize `service_id`, `template_id` e `public_key` nos arquivos HTML
-
-### 4. GitHub Pages
-1. Suba os arquivos `instrutores.html`, `admin.html` e `logo.png` no repositório
-2. Vá em **Settings → Pages**
-3. Selecione a branch `main` e pasta `/ (root)`
-4. Acesse via:
-   - `https://usuario.github.io/calendario-cursos-maria-chocolate/instrutores.html`
-   - `https://usuario.github.io/calendario-cursos-maria-chocolate/admin.html`
+### Detalhes da Solicitação
+![Detalhes](print%204.png)
 
 ---
 
-## 🔐 Segurança
+## 👤 Autor
 
-- O painel administrativo é protegido por senha com hash **SHA-256** verificado no navegador
-- As credenciais de API ficam no lado do cliente — recomenda-se configurar **regras de segurança no Firestore** para restringir escrita/leitura conforme o uso
-- O upload preset do Cloudinary é `unsigned` com pasta restrita
-- A senha do admin pode ser alterada gerando um novo hash SHA-256 e atualizando a constante `ADMIN_PWD_HASH` no `admin.html`
+Desenvolvido por **Heberth Augusto**
 
----
-
-## 📅 Regras de Agendamento
-
-| Período | Horário | Dias disponíveis |
-|---|---|---|
-| Somente manhã | 09h às 11h30 | Segunda a Sábado |
-| Somente tarde | 13h30 às 17h | Segunda a Sexta |
-| Dia inteiro | 09h às 17h | Segunda a Sexta |
-| 2 dias consecutivos | 09h às 17h | 1º dia: Segunda a Quinta |
-
-> O prazo mínimo para agendamento é de **20 dias** a partir da data atual. O admin pode liberar datas antecipadas de forma excepcional.
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/heberth-dornela-ti/)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=flat&logo=github&logoColor=white)](https://github.com/heberthaugusto)
 
 ---
 
-## 📬 Fluxo de Notificações por E-mail
-
-```
-Instrutor envia solicitação
-        ↓
-Admin recebe e-mail com os dados do curso
-        ↓
-Admin aprova ou reprova no painel
-        ↓
-Instrutor recebe e-mail com o resultado
-```
-
----
-
-## 🗂️ Categorias de Cursos
-
-- 🍫 Chocolateria
-- 🎂 Confeitaria
-- 🥐 Salgados
-- 🏪 Fornecedor
-
----
-
-## 📸 Requisitos para Fotos de Divulgação
-
-- Formato: **JPG ou PNG**
-- Resolução mínima: **1080 × 1080 px**
-- Quantidade: **mínimo 2, máximo 5 fotos** por solicitação
-
----
-
-## 🚀 Roadmap Futuro
-
-- [ ] Autenticação de instrutores com login individual
-- [ ] Notificações push no navegador
-- [ ] Exportação do calendário para Google Calendar
-- [ ] Relatórios mensais em PDF
-- [ ] Página pública de visualização dos cursos confirmados
-
----
-
-## 👩‍💼 Sobre
-
-Desenvolvido para **Maria Chocolate** — *Ensinar, criar, celebrar.*
-
----
-
-*Projeto mantido pela equipe Maria Chocolate.*
+*Projeto desenvolvido utilizando a **Claude IA** como assistente de desenvolvimento.*

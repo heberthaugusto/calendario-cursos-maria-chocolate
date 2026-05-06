@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agendar Curso — Maria Chocolate</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F9F5EF; --warm: #EDE4D5; --caramel: #C4894A; --caramel-dark: #9E6A2E;
+  --chocolate: #3D1F0A; --text: #2A1505; --text-muted: #8B6A4E;
+  --border: rgba(61,31,10,0.12); --border-strong: rgba(61,31,10,0.25);
+  --radius: 12px; --radius-sm: 8px; --green: #2D7A4F;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;}
+header{background:#5C3317;padding:1.25rem 2rem;display:flex;align-items:center;justify-content:center;min-height:88px;}
+.container{max-width:800px;margin:0 auto;padding:2.5rem 1.5rem 4rem;}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--chocolate);margin-bottom:.25rem;letter-spacing:.05em;}
+@media(max-width:480px){.page-title{font-size:22px;}}
+.page-sub{font-size:14px;color:var(--text-muted);margin-bottom:2.5rem;}
+.steps{display:flex;margin-bottom:2rem;overflow:hidden;}
+.step{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);padding:8px 8px;background:var(--warm);border:0.5px solid var(--border);flex:1;min-width:0;white-space:nowrap;overflow:hidden;}
+.step:first-child{border-radius:var(--radius-sm) 0 0 var(--radius-sm);}
+.step:last-child{border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.step+.step{border-left:none;}
+.step.active{background:var(--chocolate);color:rgba(255,255,255,.9);border-color:var(--chocolate);}
+.step.done{background:var(--caramel);color:white;border-color:var(--caramel);}
+.step-num{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;background:rgba(0,0,0,.1);}
+.step-label{overflow:hidden;text-overflow:ellipsis;}
+@media(max-width:480px){
+  .step{padding:7px 5px;font-size:10px;gap:4px;}
+  .step-num{width:16px;height:16px;font-size:9px;}
+}
+.view{display:none;}.view.active{display:block;}
+.dur-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:1.5rem;}
+.dur-card{background:white;border:1.5px solid var(--border);border-radius:var(--radius);padding:1.5rem 1.25rem;cursor:pointer;transition:all .15s;text-align:center;}
+.dur-card:hover{border-color:var(--caramel);background:#FDF8F2;}
+.dur-card.selected{border-color:var(--chocolate);background:var(--chocolate);}
+.dur-icon{font-size:30px;margin-bottom:10px;}
+.dur-title{font-size:15px;font-weight:500;color:var(--text);margin-bottom:4px;}
+.dur-card.selected .dur-title,.dur-card.selected .dur-desc{color:white;}
+.dur-desc{font-size:12px;color:var(--text-muted);line-height:1.5;}
+.dur-card.selected .dur-desc{color:rgba(255,255,255,.65);}
+.dur-disabled{opacity:.5;cursor:not-allowed!important;}
+.dur-disabled:hover{border-color:var(--border)!important;background:white!important;}
+.cal-card{background:white;border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.cal-head{background:var(--chocolate);padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
+.cal-month-label{font-family:'Cormorant Garamond',serif;font-size:22px;color:white;}
+.cal-nav-btn{background:rgba(255,255,255,.1);border:0.5px solid rgba(255,255,255,.2);border-radius:var(--radius-sm);width:34px;height:34px;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.cal-nav-btn:hover{background:rgba(255,255,255,.25);}
+.cal-body{padding:1.25rem 1.5rem 1rem;}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:6px;}
+.cal-weekday{text-align:center;font-size:11px;font-weight:500;color:var(--text-muted);letter-spacing:.05em;text-transform:uppercase;padding:4px 0;}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-day{min-height:58px;border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;padding:6px 3px 4px;cursor:pointer;border:0.5px solid transparent;transition:all .15s;overflow:hidden;}
+.cal-day:hover:not(.empty):not(.past):not(.blocked-day){background:var(--warm);border-color:var(--border);}
+.cal-day.empty{cursor:default;}
+.cal-day.past{opacity:.35;cursor:not-allowed;}
+.cal-day.blocked-day{background:var(--warm);cursor:not-allowed;}
+.cal-day.admin-blocked{background:#FDECEA;border:1.5px solid #EF9A9A;cursor:not-allowed;}
+.cal-day.admin-blocked .day-num{color:#C62828;}
+.cal-day.has-am{background:linear-gradient(to bottom,#FAEBD7 50%,white 50%);}
+.cal-day.has-pm{background:linear-gradient(to bottom,white 50%,#E8D5F0 50%);}
+.cal-day.has-am.has-pm{background:#F5E6E0;cursor:not-allowed;}
+/* Status colors - simplified */
+.cal-day.has-pending  { background:#FFF3E0; border:1.5px solid #FFB74D; }
+.cal-day.has-approved { background:#E8F5E9; border:1.5px solid #81C784; }
+.cal-day.has-pending.has-approved { background:#FFF3E0; border:1.5px solid #FFB74D; }
+/* availability labels inside day */
+.day-avail { width:100%; display:flex; flex-direction:column; gap:1px; margin-top:2px; }
+.avail-label { font-size:9px; font-weight:500; text-align:center; border-radius:3px; padding:1px 2px; line-height:1.3; }
+.avail-manha { background:rgba(255,255,255,0.7); color:#2E7D32; }
+.avail-tarde { background:rgba(255,255,255,0.7); color:#1565C0; }
+.cal-day.selected{background:var(--chocolate)!important;border-color:var(--chocolate)!important;}
+.cal-day.selected-range{background:rgba(61,31,10,.1)!important;border-color:var(--border-strong)!important;}
+.cal-day.selected .day-num{color:white;}
+.day-num{font-size:13px;line-height:1;color:var(--text);}
+.cal-day.past .day-num,.cal-day.blocked-day .day-num{color:var(--text-muted);}
+.day-tags{width:100%;margin-top:3px;display:flex;flex-direction:column;gap:2px;}
+.day-tag{font-size:9px;text-align:center;border-radius:3px;padding:1px 3px;line-height:1.3;}
+.tag-am{background:rgba(196,137,74,.2);color:#7A4A10;}
+.tag-pm{background:rgba(130,80,180,.2);color:#4A2A7A;}
+.tag-full{background:rgba(200,60,40,.15);color:#7A2A10;}
+.cal-legend{display:flex;gap:10px;flex-wrap:wrap;padding:.875rem 1.5rem;border-top:0.5px solid var(--border);background:var(--cream);}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);}
+.legend-swatch{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+.sel-bar{background:var(--chocolate);color:white;border-radius:var(--radius);padding:1rem 1.5rem;margin-top:1rem;display:none;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.sel-bar.show{display:flex;}
+.sb-label{font-size:11px;opacity:.55;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+.sb-val{font-family:'Cormorant Garamond',serif;font-size:17px;}
+.sb-btn{background:rgba(255,255,255,.12);border:0.5px solid rgba(255,255,255,.25);border-radius:var(--radius-sm);padding:6px 14px;font-size:12px;color:white;cursor:pointer;}
+.sb-btn:hover{background:rgba(255,255,255,.22);}
+.warn-box{background:#FEF3E2;border:0.5px solid #F0A500;border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#7A4A00;margin-top:8px;display:none;}
+.warn-box.show{display:block;}
+.next-btn{width:100%;margin-top:1rem;background:var(--caramel);color:white;border:none;border-radius:var(--radius);padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:background .15s;}
+.next-btn:hover{background:var(--caramel-dark);}
+.next-btn:disabled{background:var(--border-strong);cursor:not-allowed;}
+.back-btn{width:100%;margin-top:8px;background:none;color:var(--text-muted);border:0.5px solid var(--border-strong);border-radius:var(--radius);padding:11px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;}
+.back-btn:hover{background:var(--warm);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-full{grid-column:1/-1;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+label{font-size:13px;font-weight:500;color:var(--text-muted);}
+label .req{color:var(--caramel);margin-left:2px;}
+input[type=text],input[type=email],input[type=number],select,textarea{font-family:'DM Sans',sans-serif;font-size:14px;background:white;border:0.5px solid var(--border-strong);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);outline:none;transition:border-color .15s;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--caramel);}
+textarea{resize:vertical;min-height:120px;}
+.prefix-input{display:flex;}
+.prefix-input span{background:var(--warm);border:0.5px solid var(--border-strong);border-right:none;border-radius:var(--radius-sm) 0 0 var(--radius-sm);padding:10px 12px;font-size:14px;color:var(--text-muted);}
+.prefix-input input{border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.upload-zone{border:1.5px dashed var(--border-strong);border-radius:var(--radius);padding:2rem 1.5rem;text-align:center;cursor:pointer;background:var(--warm);transition:all .15s;}
+.upload-zone:hover{border-color:var(--caramel);background:#FDF6EC;}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:12px;}
+.photo-thumb{position:relative;aspect-ratio:1;border-radius:var(--radius-sm);overflow:hidden;border:0.5px solid var(--border);}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.ph-remove{position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(0,0,0,.55);border:none;border-radius:50%;color:white;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.photo-add{aspect-ratio:1;border-radius:var(--radius-sm);border:1.5px dashed var(--border-strong);background:var(--warm);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;color:var(--text-muted);transition:all .15s;}
+.photo-add:hover{border-color:var(--caramel);color:var(--caramel);}
+.field-err input,.field-err select,.field-err textarea,.field-err .upload-zone{border-color:#C0392B!important;}
+.err-msg{font-size:12px;color:#C0392B;display:none;}
+.field-err .err-msg{display:block;}
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--chocolate);margin:2rem 0 1.25rem;padding-bottom:.5rem;border-bottom:0.5px solid var(--border);}
+.sec-title:first-child{margin-top:0;}
+.date-bar{background:var(--warm);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:8px;}
+.db-label{font-size:12px;color:var(--text-muted);}
+.db-val{font-size:14px;font-weight:500;color:var(--chocolate);}
+.success-wrap{text-align:center;padding:3rem 2rem;background:white;border-radius:var(--radius);border:0.5px solid var(--border);}
+.success-icon{width:72px;height:72px;background:#F0F9F4;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:32px;}
+.success-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--chocolate);margin-bottom:.5rem;}
+.success-body{font-size:14px;color:var(--text-muted);line-height:1.7;max-width:420px;margin:0 auto 1.5rem;}
+.success-details{background:var(--warm);border-radius:var(--radius-sm);padding:1rem 1.5rem;text-align:left;max-width:400px;margin:0 auto 2rem;}
+.sd-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:13px;border-bottom:0.5px solid var(--border);}
+.sd-row:last-child{border-bottom:none;}
+.sd-row span:first-child{color:var(--text-muted);flex-shrink:0;margin-right:8px;}
+.sd-row span:last-child{font-weight:500;color:var(--chocolate);text-align:right;}
+.new-btn{background:none;border:0.5px solid var(--border-strong);border-radius:var(--radius);padding:10px 24px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;color:var(--text-muted);}
+.new-btn:hover{background:var(--warm);}
+/* LOADING OVERLAY */
+.loading-overlay{position:fixed;inset:0;background:rgba(61,31,10,.6);display:none;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:1rem;}
+.loading-overlay.show{display:flex;}
+.loading-spinner{width:48px;height:48px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--caramel);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{color:white;font-size:14px;opacity:.8;}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loading-text">Enviando solicitação...</div>
+</div>
+
+<header>
+  <div style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0.5rem 0">
+    <img src="logo.png" alt="Maria Chocolate" style="height:72px;max-width:260px;object-fit:contain;" />
+  </div>
+</header>
+
+<div class="container">
+  <h1 class="page-title">AGENDAMENTO DE CURSOS</h1>
+  <p class="page-sub">Solicitar data para curso</p>
+
+  <div class="steps">
+    <div class="step active" id="step1"><div class="step-num">1</div><span class="step-label">Data</span></div>
+    <div class="step" id="step2"><div class="step-num">2</div><span class="step-label">Período</span></div>
+    <div class="step" id="step3"><div class="step-num">3</div><span class="step-label">Informações</span></div>
+    <div class="step" id="step4"><div class="step-num">4</div><span class="step-label">Confirmação</span></div>
+  </div>
+
+  <!-- STEP 1: CALENDAR -->
+  <div class="view active" id="view-cal">
+    <div class="cal-card">
+      <div class="cal-head">
+        <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+        <span class="cal-month-label" id="cal-label"></span>
+        <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+      </div>
+      <div class="cal-body">
+        <div class="cal-weekdays" id="cal-weekdays"></div>
+        <div class="cal-days" id="cal-days"></div>
+      </div>
+      <div class="cal-legend">
+        <div class="legend-item"><div class="legend-swatch" style="background:#FFF3E0;border:1.5px solid #FFB74D"></div> Reservado — pendente</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#E8F5E9;border:1.5px solid #81C784"></div> Confirmado</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#FDECEA;border:1.5px solid #EF9A9A"></div> Data bloqueada</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--warm);border:0.5px solid var(--border-strong)"></div> Indisponível</div>
+        <div class="legend-item" style="font-size:10px;color:var(--text-muted)">Texto <span style="color:#2E7D32;font-weight:500">manhã</span> / <span style="color:#1565C0;font-weight:500">tarde</span> = período ainda livre</div>
+      </div>
+    </div>
+    <div class="warn-box" id="cal-warn"></div>
+  </div>
+
+  <!-- STEP 2: PERIOD SELECTION -->
+  <div class="view" id="view-dur">
+    <div class="date-bar">
+      <div><div class="db-label">Data selecionada</div><div class="db-val" id="dur-date-display"></div></div>
+      <button class="sb-btn" style="background:var(--warm);color:var(--text);border-color:var(--border-strong)" onclick="backToCal()">← Alterar data</button>
+    </div>
+    <p style="font-size:14px;color:var(--text-muted);margin-bottom:1.25rem">Escolha o período que deseja para ministrar seu curso neste dia:</p>
+    <div class="dur-grid" id="dur-grid"></div>
+    <div class="warn-box" id="dur-warn"></div>
+    <button class="next-btn" id="btn-dur" disabled onclick="goToForm()">Continuar para informações →</button>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="view" id="view-form">
+    <div class="date-bar">
+      <div><div class="db-label">Data e horário escolhidos</div><div class="db-val" id="form-date-text"></div></div>
+      <button class="sb-btn" style="background:var(--warm);color:var(--text);border-color:var(--border-strong)" onclick="backToCal()">← Alterar</button>
+    </div>
+
+    <div class="sec-title">Sobre o instrutor</div>
+    <div class="form-grid">
+      <div class="form-group" id="fg-nome"><label>Nome completo <span class="req">*</span></label><input type="text" id="f-nome" placeholder="Seu nome completo" /><span class="err-msg">Informe seu nome</span></div>
+      <div class="form-group" id="fg-email"><label>E-mail <span class="req">*</span></label><input type="email" id="f-email" placeholder="seu@email.com" /><span class="err-msg">E-mail inválido</span></div>
+    </div>
+
+    <div class="sec-title">Sobre o curso</div>
+    <div class="form-grid">
+      <div class="form-group" id="fg-cat"><label>Categoria <span class="req">*</span></label>
+        <select id="f-cat"><option value="">Selecionar...</option><option value="Chocolateria">🍫 Chocolateria</option><option value="Confeitaria">🎂 Confeitaria</option><option value="Salgados">🥐 Salgados</option><option value="Fornecedor">🏪 Fornecedor</option></select>
+        <span class="err-msg">Selecione a categoria</span></div>
+      <div class="form-group" id="fg-valor"><label>Valor do curso <span class="req">*</span></label>
+        <div class="prefix-input"><span>R$</span><input type="number" id="f-valor" placeholder="0,00" min="0" step="0.01" /></div>
+        <span class="err-msg">Informe o valor</span></div>
+      <div class="form-group form-full" id="fg-titulo"><label>Título do curso <span class="req">*</span></label><input type="text" id="f-titulo" placeholder="Ex: Trufas Belgas com Ganache de Maracujá" /><span class="err-msg">Informe o título</span></div>
+      <div class="form-group form-full" id="fg-desc">
+        <label>Descrição — o que os alunos vão aprender <span class="req">*</span></label>
+        <textarea id="f-desc" placeholder="Descreva os tópicos, técnicas e materiais que serão abordados..." oninput="updateDescCount()"></textarea>
+        <div style="font-size:12px;color:var(--text-muted);text-align:right;margin-top:4px"><span id="desc-count">0</span>/500 caracteres mínimos</div>
+        <span class="err-msg">A descrição deve ter pelo menos 500 caracteres</span>
+      </div>
+    </div>
+
+    <div class="sec-title">Fotos para divulgação</div>
+    <div class="form-group form-full" id="fg-foto">
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('f-foto').click()">
+        <div style="font-size:28px;margin-bottom:8px">📷</div>
+        <div style="font-size:14px;font-weight:500">Clique para selecionar as fotos</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Formato <strong>JPG ou PNG</strong> · Mínimo <strong>1080×1080 px</strong> · Entre <strong>2 e 5 fotos</strong></div>
+      </div>
+      <input type="file" id="f-foto" accept="image/jpeg,image/png" multiple style="display:none" onchange="handleUpload(this)" />
+      <div class="photo-grid" id="photo-grid"></div>
+      <div id="foto-counter" style="font-size:12px;font-weight:500;margin-top:6px;display:none"></div>
+      <span class="err-msg">Envie entre 2 e 5 fotos válidas (mín. 1080×1080 px)</span>
+    </div>
+
+    <button class="next-btn" onclick="submitForm()" style="margin-top:2rem">Enviar solicitação</button>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="view" id="view-success">
+    <div class="success-wrap">
+      <div class="success-icon">✓</div>
+      <div class="success-title">Solicitação enviada!</div>
+      <p class="success-body">Sua solicitação foi recebida. A data está reservada provisoriamente. Você será notificado por e-mail em até 5 dias úteis após a revisão.</p>
+      <div class="success-details" id="success-details"></div>
+      <button class="new-btn" onclick="resetAll()">Fazer nova solicitação</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMAILJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>emailjs.init('SUA_EMAILJS_PUBLIC_KEY');</script>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "SUA_FIREBASE_API_KEY",
+  authDomain: "SEU_PROJETO.firebaseapp.com",
+  projectId: "SEU_PROJETO_ID",
+  storageBucket: "SEU_PROJETO_ID.firebasestorage.app",
+  messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+  appId: "1:SEU_MESSAGING_SENDER_ID:web:eb697d1a4ec0875ebfaab4"
+};
+
+const CLOUDINARY_CLOUD = 'SEU_CLOUDINARY_CLOUD_NAME';
+const CLOUDINARY_PRESET = 'maria_chocolate_unsigned';
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const WD = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const DUR_CONFIG = {
+  manha:   { ini:'09:00', fim:'12:30' },
+  tarde:   { ini:'13:30', fim:'17:00' },
+  dia:     { ini:'09:00', fim:'17:00' },
+  '2dias': { ini:'09:00', fim:'17:00' },
+};
+const DUR_RULE_HINT = {
+  manha:   '📅 Manhã: disponível de terça-feira a sábado (segundas reservadas para lives)',
+  tarde:   '📅 Tarde: disponível apenas de segunda-feira a sexta-feira',
+  dia:     '📅 Dia inteiro: disponível apenas de segunda-feira a sexta-feira',
+  '2dias': '📅 2 dias consecutivos: o 1º dia deve ser de segunda-feira a quinta-feira',
+};
+
+let dur=null, tIni=null, tFim=null;
+let selDates=[], waitD2=false;
+let calCur=new Date();
+// Open calendar on first available month (respecting 20-day rule)
+const _minDate=new Date(); _minDate.setDate(_minDate.getDate()+20);
+calCur=new Date(_minDate.getFullYear(), _minDate.getMonth(), 1);
+let validPhotos=[];
+let allBookings=[];
+
+// ── FIRESTORE ──────────────────────────────────────────────────────────
+let blockedDates=[];
+function getBlockedDates(){ return blockedDates; }
+let releasedDates=[];
+function getReleasedDates(){ return releasedDates; }
+
+async function loadBookings(){
+  try {
+    const [snapA, snapB, snapC] = await Promise.all([
+      getDocs(collection(db,'agendamentos')),
+      getDocs(collection(db,'datas_bloqueadas')),
+      getDocs(collection(db,'datas_liberadas'))
+    ]);
+    allBookings   = snapA.docs.map(d=>({id:d.id,...d.data()}));
+    blockedDates  = snapB.docs.map(d=>({id:d.id,...d.data()}));
+    releasedDates = snapC.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e){ console.error('Erro ao carregar dados',e); }
+}
+
+function getB(){ return allBookings.filter(b=>b.status!=='reprovado'); }
+
+// ── CLOUDINARY ─────────────────────────────────────────────────────────
+async function uploadPhoto(file){
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_PRESET);
+  fd.append('folder', 'maria-chocolate');
+  // Auto-expire after 240 days (20736000 seconds)
+  fd.append('invalidate', 'true');
+  const expireAt = Math.floor(Date.now()/1000) + 20736000;
+  fd.append('context', `expire_at=${expireAt}`);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {method:'POST', body:fd});
+  if(!res.ok) throw new Error('Falha no upload da foto');
+  const data = await res.json();
+  return data.secure_url;
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────
+function toDS(y,m,d){ return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+function addDays(ds,n){ const[y,m,d]=ds.split('-').map(Number); const dt=new Date(y,m-1,d+n); return toDS(dt.getFullYear(),dt.getMonth()+1,dt.getDate()); }
+function fmtShort(ds){ const[y,m,d]=ds.split('-'); return `${d}/${m}/${y}`; }
+function fmtLong(ds){ const[y,m,d]=ds.split('-').map(Number); const dt=new Date(y,m-1,d); return `${WD[dt.getDay()]}, ${d} de ${MONTHS_PT[m-1]} de ${y}`; }
+function getWeekday(ds){ const[y,m,d]=ds.split('-').map(Number); return new Date(y,m-1,d).getDay(); }
+
+function getDayOccupancy(ds){
+  // Only count non-reprovado bookings for blocking
+  const bs=allBookings.filter(b=>b.status!=='reprovado'&&(b.data===ds||(b.data2&&b.data2===ds)));
+  let am=false,pm=false,full=false;
+  bs.forEach(b=>{ if(b.duracao==='dia'||b.duracao==='2dias') full=true; else if(b.duracao==='manha') am=true; else if(b.duracao==='tarde') pm=true; });
+  return {am,pm,full};
+}
+
+function getDayStatus(ds){
+  // Returns hasPending, hasApproved, amBooked, pmBooked
+  const bs=allBookings.filter(b=>b.status!=='reprovado'&&(b.data===ds||(b.data2&&b.data2===ds)));
+  let hasPending=false, hasApproved=false, amBooked=false, pmBooked=false, fullBooked=false;
+  bs.forEach(b=>{
+    if(b.status==='pendente') hasPending=true;
+    else if(b.status==='aprovado') hasApproved=true;
+    if(b.duracao==='manha') amBooked=true;
+    else if(b.duracao==='tarde') pmBooked=true;
+    else if(b.duracao==='dia'||b.duracao==='2dias') fullBooked=true;
+  });
+  return {hasPending, hasApproved, amBooked, pmBooked, fullBooked};
+}
+
+// Check if a period is allowed on a given date
+function isPeriodAllowed(ds, period){
+  const wd=getWeekday(ds);
+  if(wd===0) return false; // domingo nunca
+  // Block Monday morning (lives every Monday morning)
+  if(period==='manha')  return wd>=2&&wd<=6; // ter-sab (seg bloqueada para lives)
+  if(period==='tarde')  return wd>=1&&wd<=5; // seg-sex
+  if(period==='dia')    return wd>=1&&wd<=5; // seg-sex
+  if(period==='2dias')  return wd>=1&&wd<=4; // seg-qui
+  return false;
+}
+
+function canBookPeriod(ds, period){
+  if(!isPeriodAllowed(ds, period)) return false;
+  const{am,pm,full}=getDayOccupancy(ds);
+  if(full) return false;
+  if(period==='dia'||period==='2dias') return !am&&!pm;
+  if(period==='manha') return !am;
+  if(period==='tarde') return !pm;
+  return true;
+}
+
+// A day is clickable if it has at least one available period and is not admin-blocked
+function isDayClickable(ds){
+  if(getBlockedDates().some(b=>b.date===ds)) return false;
+  if(['manha','tarde','dia','2dias'].some(p=>canBookPeriod(ds,p))) return true;
+  return false;
+}
+
+// ── STEP 1: CALENDAR ──────────────────────────────────────────────────
+function renderCal(){
+  const y=calCur.getFullYear(),m=calCur.getMonth();
+  document.getElementById('cal-label').textContent=MONTHS_PT[m]+' '+y;
+  document.getElementById('cal-weekdays').innerHTML=WD.map(w=>`<div class="cal-weekday">${w}</div>`).join('');
+  const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
+  const today=new Date(); today.setHours(0,0,0,0);
+  const minDate=new Date(today); minDate.setDate(minDate.getDate()+20);
+  let html='';
+  for(let i=0;i<first;i++) html+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=days;d++){
+    const ds=toDS(y,m+1,d);
+    const isReleased=getReleasedDates().some(r=>r.date===ds);
+    const isPast=new Date(y,m,d)<minDate && !isReleased;
+    const clickable=!isPast&&isDayClickable(ds);
+    const{am,pm,full}=getDayOccupancy(ds);
+    const{hasPending,hasApproved,amBooked,pmBooked,fullBooked}=getDayStatus(ds);
+    const isAdminBlocked=getBlockedDates().some(b=>b.date===ds);
+    let cls='cal-day';
+    if(isPast) cls+=' past';
+    else if(isAdminBlocked) cls+=' admin-blocked';
+    else if(!clickable) cls+=' blocked-day';
+    else if(full||(am&&pm)) cls+=' blocked-day';
+    // Simple color: any pending = orange, all confirmed = green
+    if(!isPast && !isAdminBlocked){
+      if(hasPending)       cls+=' has-pending';
+      else if(hasApproved) cls+=' has-approved';
+    }
+    // Availability labels: show free periods when one is booked but not full day
+    let availHtml='';
+    if(!isPast && !isAdminBlocked && (amBooked||pmBooked) && !fullBooked && !(amBooked&&pmBooked)){
+      availHtml='<div class="day-avail">';
+      availHtml+=!amBooked?'<div class="avail-label avail-manha">manhã</div>':'<div style="height:12px"></div>';
+      availHtml+=!pmBooked?'<div class="avail-label avail-tarde">tarde</div>':'';
+      availHtml+='</div>';
+    }
+    let tags='';
+    const blockedEntry=getBlockedDates().find(b=>b.date===ds);
+    const onclick=clickable?`onclick="selectDay('${ds}')"`:'' ;
+    const title=blockedEntry?(blockedEntry.reason||'Data bloqueada'):'';
+    html+=`<div class="${cls}" ${onclick} ${title?`title="${title}"`:''}><div class="day-num">${d}</div>${availHtml}</div>`;
+  }
+  document.getElementById('cal-days').innerHTML=html;
+}
+
+window.selectDay = function(ds){
+  const warn=document.getElementById('cal-warn'); warn.classList.remove('show');
+  // go to period selection
+  selectedCalDate=ds;
+  document.getElementById('dur-date-display').textContent=fmtLong(ds);
+  renderDurCards(ds);
+  setStep(2); show('view-dur');
+}
+
+window.changeMonth = function(dir){ calCur.setMonth(calCur.getMonth()+dir); renderCal(); }
+window.backToCal = function(){ dur=null; tIni=null; tFim=null; selDates=[]; waitD2=false; setStep(1); show('view-cal'); renderCal(); }
+
+// ── STEP 2: PERIOD SELECTION ──────────────────────────────────────────
+let selectedCalDate=null;
+
+function renderDurCards(ds){
+  const wd=getWeekday(ds);
+  const wdName=WD[wd];
+  const periods=[
+    {id:'manha', icon:'🌅', title:'Somente manhã',    desc:'Das <strong>09h às 12h30</strong>',        rule:'Seg a Sáb'},
+    {id:'tarde', icon:'🌆', title:'Somente tarde',    desc:'Das <strong>13h30 às 17h</strong>',         rule:'Seg a Sex'},
+    {id:'dia',   icon:'☀️', title:'Dia inteiro',       desc:'Das <strong>09h às 17h</strong>',           rule:'Seg a Sex'},
+    {id:'2dias', icon:'📅', title:'2 dias inteiros',  desc:`Das <strong>09h às 17h</strong> — 2 dias consecutivos<br>Reserva: <strong>${fmtShort(ds)}</strong> e <strong>${fmtShort(addDays(ds,1))}</strong>`,  rule:'1º dia: Seg a Qui'},
+  ];
+  const grid=document.getElementById('dur-grid');
+  grid.innerHTML=periods.map(p=>{
+    const avail=canBookPeriod(ds,p.id);
+    const sel=dur===p.id;
+    let cls='dur-card'+(sel?' selected':'')+(avail?'':' dur-disabled');
+    const onclick=avail?`onclick="selectDur('${p.id}','${ds}')"`:'' ;
+    const unavailMsg=!avail?`<div style="font-size:11px;color:#C0392B;margin-top:6px">Indisponível neste dia</div>`:'';
+    return `<div class="${cls}" ${onclick}>
+      <div class="dur-icon">${p.icon}</div>
+      <div class="dur-title">${p.title}</div>
+      <div class="dur-desc">${p.desc}<br><span style="font-size:11px;opacity:.7">${p.rule}</span></div>
+      ${unavailMsg}
+    </div>`;
+  }).join('');
+}
+
+window.selectDur = function(d, ds){
+  const warn=document.getElementById('dur-warn');
+  warn.classList.remove('show');
+
+  if(d==='2dias'){
+    const next=addDays(ds,1);
+    // Check next day availability
+    if(!canBookPeriod(next,'dia')){
+      warn.textContent='⚠ O dia seguinte ('+fmtShort(next)+') não está disponível. Escolha outra data para 2 dias.';
+      warn.classList.add('show');
+      return;
+    }
+    selDates=[ds, next];
+    // Update date bar to show both days
+    document.getElementById('dur-date-display').textContent=
+      fmtLong(ds)+' e '+fmtLong(next)+' · 2 dias inteiros · 09h às 17h';
+  } else {
+    selDates=[ds];
+    document.getElementById('dur-date-display').textContent=fmtLong(ds);
+  }
+
+  dur=d;
+  const cfg=DUR_CONFIG[d]; tIni=cfg.ini; tFim=cfg.fim;
+
+  // Re-render cards with selection highlighted
+  renderDurCards(ds);
+  // Mark selected card
+  document.querySelectorAll('.dur-card:not(.dur-disabled)').forEach(card=>{
+    const title=card.querySelector('.dur-title');
+    if(title&&title.textContent==={manha:'Somente manhã',tarde:'Somente tarde',dia:'Dia inteiro','2dias':'2 dias inteiros'}[d])
+      card.classList.add('selected');
+  });
+  document.getElementById('btn-dur').disabled=false;
+}
+
+function buildSelText(){
+  // Used in date bar on form step
+  if(dur==='2dias'&&selDates.length===2)
+    return fmtLong(selDates[0])+' e '+fmtLong(selDates[1]);
+  const horarios={manha:'09h às 12h30',tarde:'13h30 às 17h',dia:'09h às 17h'};
+  return fmtLong(selDates[0])+' · '+horarios[dur];
+}
+
+function buildSelTextFull(){
+  // Used in summary bar on calendar step
+  const dl={manha:'Manhã · 09h às 12h30',tarde:'Tarde · 13h30 às 17h',dia:'Dia inteiro · 09h às 17h','2dias':'2 dias inteiros · 09h às 17h'};
+  if(dur==='2dias'&&selDates.length===2)
+    return fmtLong(selDates[0])+' e '+fmtLong(selDates[1])+' · '+dl[dur];
+  return fmtLong(selDates[0])+' · '+dl[dur];
+}
+
+function goToForm(){ document.getElementById('form-date-text').textContent=buildSelText(); setStep(3); show('view-form'); }
+function backToForm(){ setStep(3); show('view-form'); }
+
+// ── STEP 3: FORM ───────────────────────────────────────────────────────
+window.handleUpload = function(inp){
+  if(!inp.files||!inp.files.length) return;
+  const files=Array.from(inp.files); inp.value='';
+  const slots=5-validPhotos.length; if(slots<=0) return;
+  files.slice(0,slots).forEach(file=>{
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+    img.onload=()=>{
+      if(img.width>=1080&&img.height>=1080){ validPhotos.push({file,url}); renderPhotoGrid(null); }
+      else renderPhotoGrid(file.name+' — '+img.width+'×'+img.height+'px (mínimo 1080×1080)');
+    };
+    img.src=url;
+  });
+}
+
+function renderPhotoGrid(errName){
+  const grid=document.getElementById('photo-grid'), fg=document.getElementById('fg-foto');
+  const count=validPhotos.length, atMax=count>=5;
+  let html=validPhotos.map((p,i)=>`<div class="photo-thumb"><img src="${p.url}"/><button class="ph-remove" onclick="removePhoto(${i})">✕</button></div>`).join('');
+  if(!atMax) html+=`<div class="photo-add" onclick="document.getElementById('f-foto').click()">+</div>`;
+  grid.innerHTML=html;
+  const cEl=document.getElementById('foto-counter');
+  if(cEl){ cEl.textContent=count+'/5 fotos'; cEl.style.color=count>=2?'var(--green)':'var(--caramel)'; cEl.style.display=count>0?'block':'none'; }
+  document.getElementById('upload-zone').style.display=count?'none':'block';
+  if(errName){
+    const d=document.createElement('div'); d.style.cssText='font-size:12px;color:#C0392B;margin-top:6px;';
+    d.textContent='⚠ Foto recusada: '+errName; grid.appendChild(d); setTimeout(()=>d.remove(),5000);
+  }
+  if(count>=2) fg.classList.remove('field-err');
+}
+
+window.removePhoto = function(idx){ URL.revokeObjectURL(validPhotos[idx].url); validPhotos.splice(idx,1); renderPhotoGrid(null); if(!validPhotos.length) document.getElementById('upload-zone').style.display='block'; }
+
+window.updateDescCount = function(){
+  const len=document.getElementById('f-desc').value.trim().length;
+  const el=document.getElementById('desc-count'); el.textContent=len;
+  el.style.color=len>=500?'var(--green)':len>=300?'var(--caramel)':'var(--text-muted)';
+  if(len>=500) document.getElementById('fg-desc').classList.remove('field-err');
+}
+
+function validate(){
+  const checks=[
+    {id:'fg-nome', ok:()=>document.getElementById('f-nome').value.trim()},
+    {id:'fg-email',ok:()=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById('f-email').value)},
+    {id:'fg-cat',  ok:()=>document.getElementById('f-cat').value},
+    {id:'fg-valor',ok:()=>document.getElementById('f-valor').value&&parseFloat(document.getElementById('f-valor').value)>0},
+    {id:'fg-titulo',ok:()=>document.getElementById('f-titulo').value.trim()},
+    {id:'fg-desc', ok:()=>document.getElementById('f-desc').value.trim().length>=500},
+    {id:'fg-foto', ok:()=>validPhotos.length>=2&&validPhotos.length<=5},
+  ];
+  let ok=true;
+  checks.forEach(c=>{ const el=document.getElementById(c.id); if(!c.ok()){el.classList.add('field-err');ok=false;}else el.classList.remove('field-err'); });
+  return ok;
+}
+
+window.submitForm = async function(){
+  if(!validate()){ document.querySelector('.field-err')?.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+
+  // Check monthly limit: max 5 courses per instructor per month
+  const instructorEmail = document.getElementById('f-email').value.trim().toLowerCase();
+  const [bookYear, bookMonth] = selDates[0].split('-');
+  const monthKey = bookYear + '-' + bookMonth;
+  const monthlyCount = allBookings.filter(b =>
+    b.email && b.email.toLowerCase() === instructorEmail &&
+    b.status !== 'reprovado' &&
+    b.data && b.data.startsWith(monthKey)
+  ).length;
+
+  if(monthlyCount >= 5){
+    const [y,m] = monthKey.split('-');
+    const monthName = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][parseInt(m)-1];
+    alert('Você já possui 5 cursos agendados em ' + monthName + ' de ' + y + '.\nEste é o limite máximo permitido por instrutor por mês.');
+    return;
+  }
+
+  showLoading('Enviando fotos...');
+  try {
+    // Upload all photos to Cloudinary
+    const photoUrls=[];
+    for(let i=0;i<validPhotos.length;i++){
+      setLoadingText(`Enviando foto ${i+1} de ${validPhotos.length}...`);
+      const url=await uploadPhoto(validPhotos[i].file);
+      photoUrls.push(url);
+    }
+    setLoadingText('Salvando solicitação...');
+    const dl={manha:'Somente manhã',tarde:'Somente tarde',dia:'Dia inteiro','2dias':'2 dias inteiros'};
+    const booking={
+      data:selDates[0], data2:selDates[1]||null,
+      duracao:dur, horaInicio:tIni, horaFim:tFim,
+      nome:document.getElementById('f-nome').value.trim(),
+      email:document.getElementById('f-email').value.trim(),
+      categoria:document.getElementById('f-cat').value,
+      titulo:document.getElementById('f-titulo').value.trim(),
+      descricao:document.getElementById('f-desc').value.trim(),
+      valor:parseFloat(document.getElementById('f-valor').value),
+      fotos:photoUrls,
+      status:'pendente',
+      criadoEm:new Date().toISOString(),
+    };
+    const docRef=await addDoc(collection(db,'agendamentos'),booking);
+    booking.id=docRef.id;
+    allBookings.push(booking);
+
+    // Send notification email to admin
+    setLoadingText('Enviando notificação...');
+    let dateText=fmtLong(booking.data); if(booking.data2) dateText+=' e '+fmtLong(booking.data2);
+    try {
+      await emailjs.send('SEU_EMAILJS_SERVICE_ID', 'SEU_EMAILJS_TEMPLATE_ID_1', {
+        nome: booking.nome,
+        email_instrutor: booking.email,
+        titulo: booking.titulo,
+        data: dateText,
+        horario: booking.horaInicio+'h às '+booking.horaFim+'h',
+        categoria: booking.categoria,
+        valor: booking.valor.toFixed(2),
+      });
+    } catch(emailErr){ console.warn('Erro ao enviar e-mail de notificação:', emailErr); }
+
+    hideLoading();
+    document.getElementById('success-details').innerHTML=`
+      <div class="sd-row"><span>Data</span><span>${dateText}</span></div>
+      <div class="sd-row"><span>Horário</span><span>${booking.horaInicio}h às ${booking.horaFim}h</span></div>
+      <div class="sd-row"><span>Duração</span><span>${dl[booking.duracao]}</span></div>
+      <div class="sd-row"><span>Curso</span><span>${booking.titulo}</span></div>
+      <div class="sd-row"><span>Categoria</span><span>${booking.categoria}</span></div>
+      <div class="sd-row"><span>Valor</span><span>R$ ${booking.valor.toFixed(2)}</span></div>
+      <div class="sd-row"><span>Fotos</span><span>${photoUrls.length} foto(s) enviada(s)</span></div>
+      <div class="sd-row"><span>Status</span><span style="color:var(--caramel)">Aguardando aprovação</span></div>
+    `;
+    setStep(4); show('view-success');
+  } catch(e){
+    hideLoading();
+    alert('Erro ao enviar solicitação. Por favor tente novamente.\n'+e.message);
+  }
+}
+
+window.resetAll = function(){
+  dur=null; tIni=null; tFim=null; selDates=[]; waitD2=false; selectedCalDate=null;
+  document.getElementById('btn-dur').disabled=true;
+  ['f-nome','f-email','f-titulo','f-desc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-cat').value=''; document.getElementById('f-valor').value='';
+  document.getElementById('f-foto').value='';
+  validPhotos.forEach(p=>URL.revokeObjectURL(p.url)); validPhotos=[];
+  document.getElementById('photo-grid').innerHTML='';
+  document.getElementById('upload-zone').style.display='block';
+  document.getElementById('foto-counter').style.display='none';
+  setStep(1); show('view-cal'); renderCal();
+}
+
+// ── HELPERS ────────────────────────────────────────────────────────────
+function show(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function setStep(n){ for(let i=1;i<=4;i++){ const el=document.getElementById('step'+i); el.classList.remove('active','done'); if(i<n)el.classList.add('done'); else if(i===n)el.classList.add('active'); } }
+function showLoading(txt){ document.getElementById('loading-overlay').classList.add('show'); setLoadingText(txt); }
+function hideLoading(){ document.getElementById('loading-overlay').classList.remove('show'); }
+function setLoadingText(txt){ document.getElementById('loading-text').textContent=txt; }
+
+// ── EXPOSE ALL TO GLOBAL SCOPE ────────────────────────────────────────
+window.goToForm       = goToForm;
+window.backToCal      = backToCal;
+window.selectDur      = selectDur;
+window.renderCal      = renderCal;
+window.goToForm       = goToForm;
+window.show           = show;
+window.setStep        = setStep;
+window.showLoading    = showLoading;
+window.hideLoading    = hideLoading;
+window.setLoadingText = setLoadingText;
+window.updateDescCount= updateDescCount;
+window.handleUpload   = handleUpload;
+window.removePhoto    = removePhoto;
+window.submitForm     = submitForm;
+window.resetAll       = resetAll;
+
+// Init
+await loadBookings();
+renderCal();
+</script>
+</body>
+</html>
